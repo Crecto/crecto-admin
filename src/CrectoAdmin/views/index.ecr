@@ -1,0 +1,5 @@
+<% data.each do |item| %>
+  <a href="/<%= item.class.table_name %>/<%= item.pkey_value %>"><%= item %></a>
+<% end %>
+
+<%= count %>
