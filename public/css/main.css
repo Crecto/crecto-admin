@@ -1,0 +1,12 @@
+#wrapper {
+  padding-left: 240px;
+}
+
+#wrapper .side-nav {
+  top: 64px;
+  width: 240px;
+}
+
+#wrapper .side-nav .userView .background {
+  background-color: gray;
+}

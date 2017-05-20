@@ -20,7 +20,7 @@ get "/" do |ctx|
 end
 
 get "/dashboard" do |ctx|
-  render "src/CrectoAdmin/views/dashboard.ecr", "src/CrectoAdmin/views/admin_layout.ecr"
+  render "src/views/dashboard.ecr", "src/views/admin_layout.ecr"
 end
 
 def self.admin_resource(model : Crecto::Model.class, repo, **opts)
@@ -31,17 +31,17 @@ def self.admin_resource(model : Crecto::Model.class, repo, **opts)
     query = Crecto::Repo::Query.limit(20).offset(offset)
     data = repo.all(model, query)
     count = repo.aggregate(model, :count, :id)
-    render "src/CrectoAdmin/views/index.ecr", "src/CrectoAdmin/views/admin_layout.ecr"
+    render "src/views/index.ecr", "src/views/admin_layout.ecr"
   end
 
   get "/#{model.table_name}/:id" do |ctx|
     item = repo.get!(model, ctx.params.url["id"])
-    render "src/CrectoAdmin/views/show.ecr", "src/CrectoAdmin/views/admin_layout.ecr"
+    render "src/views/show.ecr", "src/views/admin_layout.ecr"
   end
 
   get "/#{model.table_name}/:id/edit" do |ctx|
     item = repo.get!(model, ctx.params.url["id"])
-    render "src/CrectoAdmin/views/edit.ecr", "src/CrectoAdmin/views/admin_layout.ecr"
+    render "src/views/edit.ecr", "src/views/admin_layout.ecr"
   end
 
   delete "/#{model.table_name}/:id" do |ctx|

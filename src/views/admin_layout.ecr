@@ -8,6 +8,7 @@
 
     <link href="http://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.98.2/css/materialize.min.css" media="screen,projection">
+    <link rel="stylesheet" href="/css/main.css">
   </head>
   <body>
     <header>
@@ -18,12 +19,35 @@
           </div>
         </nav>
       </div>
-      
-      <% CrectoAdmin.resources.each do |resource| %>
-        <a href="/<%= resource[:model].table_name %>"><%= resource[:model].table_name %></a>
-      <% end %>
     </header>
-    <%= content %>
+
+    <div id="main">
+      <div id="wrapper">
+        <aside id="left-siebar-nav">
+          <ul id="slide-out" class="side-nav fixed leftside-navigation">
+            <li>
+              <div class="userView">
+                <div class="background">
+                  
+                </div>
+                <a href="#!name"><span class="white-text name">John Doe</span></a>
+                <a href="#!email"><span class="white-text email">John Doe</span></a>
+              </div>
+            </li>
+
+            <% CrectoAdmin.resources.each do |resource| %>
+              <li>
+                <a href="/<%= resource[:model].table_name %>"><%= resource[:model].table_name %></a>
+              </li>
+            <% end %>
+          </ul>
+        </aside>
+
+        <section id="content">
+          <%= content %>
+        </section>
+      </div>
+    </div>
 
     <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.98.2/js/materialize.min.js"></script>
