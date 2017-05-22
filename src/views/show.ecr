@@ -1,1 +1,20 @@
-<%= item %>
+<div class="row">
+  <div class="col s10 offset-s1">
+  <h4><%= item.responds_to?(:name) ? item.name : item.pkey_value %></h4>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col s10 offset-s1">
+    <a class="waves-effect waves-light btn" href="/admin/<%= item.class.table_name %>/<%= item.pkey_value %>/edit"><i class="material-icons left">mode_edit</i>edit</a>
+    <% resource[:show_page_attributes].each do |attr| %>
+    <% query_hash = item.to_query_hash %>
+      <div class="row">
+        <div class="input-field col s8">
+          <h5><%= attr %></h5>
+          <p><%= query_hash[attr] %></p>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>

@@ -10,3 +10,7 @@
 #wrapper .side-nav .userView .background {
   background-color: gray;
 }
+
+.item-link {
+  cursor: pointer;
+}
