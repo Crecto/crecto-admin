@@ -19,8 +19,16 @@
             <input placeholder="<%= attr %>" name="<%= attr %>" id="<%= attr %>" type="checkbox" <% if query_hash[attr] == true %>checked="checked"<% end %>>
             <label for="<%= attr %>"><%= attr %></label>
           <% elsif field_type == "Time" %>
-            <input placeholder="<%= attr %>" name="<%= attr %>" id="<%= attr %>" type="text" value="<%= query_hash[attr] %>">
-            <label for="<%= attr %>"><%= attr %></label>
+            <input id="<%= attr %>" type="hidden" name="<%= attr %>" value="<%= query_hash[attr] %>">
+            <div class="row">
+              <div class="col s6">
+                <input class="datepicker" name="<%= attr %>-date" type="date" data-original="<%= query_hash[attr] %>">
+                <label for="<%= attr %>"><%= attr %></label>
+              </div>
+              <div class="col s6">
+                <input class="timepicker" name="<%= attr %>-time" type="time" data-original="<%= query_hash[attr] %>">
+              </div>
+            </div>
           <% elsif field_type == "String" %>
             <input placeholder="<%= attr %>" name="<%= attr %>" id="<%= attr %>" type="text" value="<%= query_hash[attr] %>">
             <label for="<%= attr %>"><%= attr %></label>
@@ -36,3 +44,40 @@
     </button>
   </form>
 </div>
+
+<script>
+$(function(){
+  $.each($('.datepicker'), function(i, e){
+    var $el = $(e),
+      date = $el.data('original').substring(0, 10)
+    $el.data('default', date)
+    $el.val(date)
+
+    var picker = $el.pickadate({
+      onSet: function(o) {
+        var newDate = new Date(o.select).toISOString().substring(0, 10),
+          input = $('#' + $el.attr('name').replace('-date', ''))
+        input.val(input.val().replace(input.val().split(' ')[0], newDate))
+      }
+    })
+  })
+  $.each($('.timepicker'), function(i, e){
+    var $el = $(e),
+      t = new Date($el.data('original'))
+      time = t.toString().substring(16, 24)
+    $el.data('default', time)
+    $el.val(time)
+
+    $el.pickatime({
+      twelvehour: false,
+      afterDone: function(element, time) {
+        var input = $('#' + $el.attr('name').replace('-time', '')),
+          date = new Date(input.val().replace(input.val().split(' ')[1], $el.val()).substring(0, 16)),
+          time = date.getUTCHours() + ':' + date.getUTCMinutes() + ':' + date.getUTCSeconds()
+
+        input.val(input.val().replace(input.val().split(' ')[1], time))
+      }
+    })
+  })
+})
+</script>
