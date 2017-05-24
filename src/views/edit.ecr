@@ -5,7 +5,7 @@
 </div>
 
 <div class="row">
-  <form class="col s10 offset-s1" action="/admin/<%= item.class.table_name %>/<%= item.id %>">
+  <form class="col s10 offset-s1" action="/admin/<%= item.class.table_name %>/<%= item.pkey_value %>">
     <input type="hidden" name="_method" value="put" />
     <% resource[:show_page_attributes].each do |attr| %>
       <% next if attr == item.class.primary_key_field_symbol %>

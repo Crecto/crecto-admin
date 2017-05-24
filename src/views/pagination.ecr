@@ -1,0 +1,22 @@
+<div class="pagination">
+  <% pages = (count.to_f / per_page.to_f).ceil.to_i %>
+  <% current_page = (offset.to_i / per_page) + 1 %>
+
+  <ul class="pagination">
+    <% if current_page == 1 %>
+      <li class="disabled"><a href="#!"><i class="material-icons">chevron_left</i></a></li>
+    <% else %>
+      <li><a href="/admin/<%= resource[:model].table_name %>?offset=<%= (current_page - 2) * per_page %>"><i class="material-icons">chevron_left</i></a></li>
+    <% end %>
+  
+    <% (1..pages).each do |page| %>
+      <li <% if page == current_page %>class="active"<% else %>class="waves-effect"<% end %>><a href="/admin/<%= resource[:model].table_name %>?offset=<%= (page - 1) * per_page %>"><%= page %></a></li>
+    <% end %>
+
+    <% if current_page == pages %>
+      <li class="disabled"><a href="#!"><i class="material-icons">chevron_right</i></a></li>
+    <% else %>
+      <li><a href="/admin/<%= resource[:model].table_name %>?offset=<%= current_page * per_page %>"><i class="material-icons">chevron_right</i></a></li>
+    <% end %>
+  </ul>
+</div>
