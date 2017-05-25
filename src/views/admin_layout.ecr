@@ -30,6 +30,7 @@
       <div id="wrapper">
         <aside id="left-siebar-nav">
           <ul id="slide-out" class="side-nav fixed leftside-navigation">
+          <!-- TODO: for logged in users, show information
             <li>
               <div class="userView">
                 <div class="background">
@@ -39,10 +40,11 @@
                 <a href="#!email"><span class="white-text email">John Doe</span></a>
               </div>
             </li>
+            -->
 
             <% CrectoAdmin.resources.each do |resource| %>
               <li>
-                <a href="/admin/<%= resource[:model].table_name %>"><%= resource[:model].table_name %></a>
+                <a href="/admin/<%= resource[:model].table_name %>"><%= resource[:model].table_name.split('_').map(&.capitalize).join(' ') %></a>
               </li>
             <% end %>
           </ul>

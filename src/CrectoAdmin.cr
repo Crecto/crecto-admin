@@ -54,6 +54,11 @@ def self.admin_resource(model : Crecto::Model.class, repo, **opts)
     render "src/views/index.ecr", "src/views/admin_layout.ecr"
   end
 
+  get "/admin/#{model.table_name}/new" do |ctx|
+    item = model.new
+    render "src/views/new.ecr", "src/views/admin_layout.ecr"
+  end
+
   get "/admin/#{model.table_name}/:id" do |ctx|
     if ctx.params.query["_method"]? == "put"
       item = repo.get!(model, ctx.params.url["id"])
@@ -73,6 +78,18 @@ def self.admin_resource(model : Crecto::Model.class, repo, **opts)
   get "/admin/#{model.table_name}/:id/edit" do |ctx|
     item = repo.get!(model, ctx.params.url["id"])
     render "src/views/edit.ecr", "src/views/admin_layout.ecr"
+  end
+
+  post "/admin/#{model.table_name}" do |ctx|
+    item = model.new
+    query_hash = ctx.params.body.to_h
+    item.class.fields.select{|f| f[:type] == "Bool"}.each do |field|
+      query_hash[field[:name].to_s] = query_hash[field[:name].to_s]? == "on" ? "true" : "false"
+    end
+    item.update_from_hash(query_hash)
+    changeset = repo.insert(item)
+    # TODO: handle changeset errors
+    ctx.redirect "/admin/#{model.table_name}/#{changeset.instance.pkey_value}"
   end
 
   delete "/admin/#{model.table_name}/:id" do |ctx|

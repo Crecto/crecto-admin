@@ -1,0 +1,47 @@
+<script>
+function setDefaultDate ($el) {
+  if ($el.val() !== '') return
+  var date = new Date()
+  var d = date.getFullYear() + '-' + ("0" + (date.getMonth() + 1)).slice(-2) + '-' + date.getDate() + ' ' + 
+  date.toTimeString().split(' ')[0] + ' UTC'
+  $el.val(date)
+}
+
+$(function(){
+  $.each($('.datepicker'), function(i, e){
+    var $el = $(e),
+      date = $el.data('original').substring(0, 10)
+    $el.data('default', date)
+    $el.val(date)
+
+    var picker = $el.pickadate({
+      onSet: function(o) {
+        var newDate = new Date(o.select).toISOString().substring(0, 10),
+          input = $('#' + $el.attr('name').replace('-date', ''))
+
+        setDefaultDate(input)
+        input.val(input.val().replace(input.val().split(' ')[0], newDate))
+      }
+    })
+  })
+  $.each($('.timepicker'), function(i, e){
+    var $el = $(e),
+      t = new Date($el.data('original'))
+      time = t.toString().substring(16, 24)
+    $el.data('default', time)
+    $el.val(time)
+
+    $el.pickatime({
+      twelvehour: false,
+      afterDone: function(element, time) {
+        var input = $('#' + $el.attr('name').replace('-time', '')),
+          date = new Date(input.val().replace(input.val().split(' ')[1], $el.val()).substring(0, 16)),
+          time = date.getUTCHours() + ':' + date.getUTCMinutes() + ':' + date.getUTCSeconds()
+
+        setDefaultDate(input)
+        input.val(input.val().replace(input.val().split(' ')[1], time))
+      }
+    })
+  })
+})
+</script>

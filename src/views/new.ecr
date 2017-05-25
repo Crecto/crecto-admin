@@ -1,12 +1,11 @@
 <div class="row">
   <div class="col s10 offset-s1">
-  <h4><%= item.responds_to?(:name) ? item.name : item.pkey_value %></h4>
+  <h4>new</h4>
   </div>
 </div>
 
 <div class="row">
-  <form class="col s10 offset-s1" action="/admin/<%= item.class.table_name %>/<%= item.pkey_value %>">
-    <input type="hidden" name="_method" value="put" />
+  <form class="col s10 offset-s1" method="post" action="/admin/<%= item.class.table_name %>">
     <%= render "src/views/form_fields.ecr" %>
     <button class="btn waves-effect waves-light" type="submit" name="action">Submit
       <i class="material-icons right">send</i>
