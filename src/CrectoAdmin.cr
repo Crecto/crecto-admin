@@ -1,6 +1,3 @@
-require "kemal"
-require "pg"
-require "../../crecto/src/crecto"
 require "./CrectoAdmin/*"
 
 module CrectoAdmin

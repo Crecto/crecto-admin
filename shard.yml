@@ -15,7 +15,7 @@ development_dependencies:
 
   crecto:
     github: crecto/crecto
-    version: 0.5.4
+    branch: master
 
   kemal:
     github: kemalcr/kemal
