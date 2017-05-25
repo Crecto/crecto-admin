@@ -7,6 +7,7 @@
 <div class="row">
   <div class="col s10 offset-s1">
     <a class="waves-effect waves-light btn" href="/admin/<%= item.class.table_name %>/<%= item.pkey_value %>/edit"><i class="material-icons left">mode_edit</i>edit</a>
+    <a class="waves-effect waves-light btn red" href="/admin/<%= item.class.table_name %>/<%= item.pkey_value %>/delete"><i class="material-icons left">delete</i>delete</a>
     <% resource[:show_page_attributes].each do |attr| %>
     <% query_hash = item.to_query_hash %>
       <div class="row">

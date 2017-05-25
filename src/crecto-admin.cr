@@ -117,7 +117,7 @@ def self.admin_resource(model : Crecto::Model.class, repo, **opts)
     ctx.redirect "/admin/#{model.table_name}/#{changeset.instance.pkey_value}"
   end
 
-  delete "/admin/#{model.table_name}/:id" do |ctx|
+  get "/admin/#{model.table_name}/:id/delete" do |ctx|
     item = repo.get!(model, ctx.params.url["id"])
     repo.delete(item)
     ctx.redirect "/admin/#{model.table_name}"
