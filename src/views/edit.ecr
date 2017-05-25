@@ -46,6 +46,14 @@
 </div>
 
 <script>
+function setDefaultDate ($el) {
+  if ($el.val() !== '') return
+  var date = new Date()
+  var d = date.getFullYear() + '-' + ("0" + (date.getMonth() + 1)).slice(-2) + '-' + date.getDate() + ' ' + 
+  date.toTimeString().split(' ')[0] + ' UTC'
+  $el.val(date)
+}
+
 $(function(){
   $.each($('.datepicker'), function(i, e){
     var $el = $(e),
@@ -57,6 +65,8 @@ $(function(){
       onSet: function(o) {
         var newDate = new Date(o.select).toISOString().substring(0, 10),
           input = $('#' + $el.attr('name').replace('-date', ''))
+
+        setDefaultDate(input)
         input.val(input.val().replace(input.val().split(' ')[0], newDate))
       }
     })
@@ -75,6 +85,7 @@ $(function(){
           date = new Date(input.val().replace(input.val().split(' ')[1], $el.val()).substring(0, 16)),
           time = date.getUTCHours() + ':' + date.getUTCMinutes() + ':' + date.getUTCSeconds()
 
+        setDefaultDate(input)
         input.val(input.val().replace(input.val().split(' ')[1], time))
       }
     })
