@@ -1,4 +1,32 @@
 require "./CrectoAdmin/*"
+require "baked_file_system"
+
+class CrectoAdmin::FileStorage
+  BakedFileSystem.load("../public", __DIR__)
+end
+
+CrectoAdmin::FileStorage.files.each do |file|
+  get(file.path) do |env|
+    env.response.content_type = file.mime_type
+    _file = CrectoAdmin::FileStorage.get(file.path)
+    if env.request.headers["Accept-Encoding"]? =~ /gzip/
+      env.response.headers["Content-Encoding"] = "gzip"
+      env.response.content_length = _file.compressed_size
+      _file.write_to_io(env.response, compressed: true)
+    else
+      env.response.content_length = _file.size
+      _file.write_to_io(env.response, compressed: false)
+    end
+  end
+end
+
+macro ecr(xxx)
+  {% if xxx.starts_with?('_') %}
+    render "#{{{__DIR__}}}/views/#{{{xxx}}}.ecr"
+  {% else %}
+    render "#{{{__DIR__}}}/views/#{{{xxx}}}.ecr", "#{{{__DIR__}}}/views/admin_layout.ecr"
+  {% end %}
+end
 
 module CrectoAdmin
   @@resources = Array(NamedTuple(
@@ -26,7 +54,7 @@ get "/admin" do |ctx|
 end
 
 get "/admin/dashboard" do |ctx|
-  render "src/views/dashboard.ecr", "src/views/admin_layout.ecr"
+  ecr "dashboard"
 end
 
 def self.admin_resource(model : Crecto::Model.class, repo, **opts)
@@ -48,12 +76,12 @@ def self.admin_resource(model : Crecto::Model.class, repo, **opts)
     query = Crecto::Repo::Query.limit(per_page).offset(offset)
     data = repo.all(model, query)
     count = repo.aggregate(model, :count, resource[:model].primary_key_field_symbol).as(Int64)
-    render "src/views/index.ecr", "src/views/admin_layout.ecr"
+    ecr("index")
   end
 
   get "/admin/#{model.table_name}/new" do |ctx|
     item = model.new
-    render "src/views/new.ecr", "src/views/admin_layout.ecr"
+    ecr("new")
   end
 
   get "/admin/#{model.table_name}/:id" do |ctx|
@@ -68,13 +96,13 @@ def self.admin_resource(model : Crecto::Model.class, repo, **opts)
       ctx.redirect "/admin/#{model.table_name}/#{item.pkey_value}"
     else
       item = repo.get!(model, ctx.params.url["id"])
-      render "src/views/show.ecr", "src/views/admin_layout.ecr"
+      ecr("show")
     end
   end
 
   get "/admin/#{model.table_name}/:id/edit" do |ctx|
     item = repo.get!(model, ctx.params.url["id"])
-    render "src/views/edit.ecr", "src/views/admin_layout.ecr"
+    ecr("edit")
   end
 
   post "/admin/#{model.table_name}" do |ctx|

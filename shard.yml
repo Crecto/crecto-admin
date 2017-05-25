@@ -8,6 +8,10 @@ crystal: 0.22.0
 
 license: MIT
 
+dependencies:
+  baked_file_system:
+    github: schovi/baked_file_system
+
 development_dependencies:
   # mysql:
   #   github: crystal-lang/crystal-mysql
