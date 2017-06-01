@@ -29,12 +29,11 @@ macro ecr(xxx)
 end
 
 module CrectoAdmin
-  @@resources = Array(NamedTuple(
-    model: Crecto::Model.class,
-    repo: Repo.class,
-    collection_attributes: Array(Symbol),
-    show_page_attributes: Array(Symbol),
-    form_attributes: Array(Symbol))).new
+  @@resources = Array(NamedTuple(model: Crecto::Model.class,
+  repo: Repo.class,
+  collection_attributes: Array(Symbol),
+  show_page_attributes: Array(Symbol),
+  form_attributes: Array(Symbol))).new
 
   def self.add_resource(resource)
     @@resources.push(resource)
@@ -45,7 +44,20 @@ module CrectoAdmin
   end
 
   def self.resource(model)
-    @@resources.select{|r| r[:model] == model }[0]
+    @@resources.select { |r| r[:model] == model }[0]
+  end
+
+  def self.field_cast(field, repo)
+    if repo.config.adapter === Crecto::Adapters::Mysql
+      "CONCAT(#{field}, '')"
+    else
+      "CAST(#{field} as TEXT)"
+    end
+  end
+
+  def self.search_param(ctx)
+    ctx.params.body["search"]? ||
+      ctx.params.query["search"]?
   end
 end
 
@@ -58,16 +70,18 @@ get "/admin/dashboard" do |ctx|
 end
 
 def self.admin_resource(model : Crecto::Model.class, repo, **opts)
-  collection_attributes = model.responds_to?(:collection_attributes) ? model.collection_attributes :  model.fields.map{|f| f[:name] }
-  show_page_attributes = model.responds_to?(:show_page_attributes) ? model.show_page_attributes :  model.fields.map{|f| f[:name] }
-  form_attributes = model.responds_to?(:form_attributes) ? model.form_attributes :  model.fields.map{|f| f[:name] }
+  collection_attributes = model.responds_to?(:collection_attributes) ? model.collection_attributes : model.fields.map { |f| f[:name] }
+  show_page_attributes = model.responds_to?(:show_page_attributes) ? model.show_page_attributes : model.fields.map { |f| f[:name] }
+  form_attributes = model.responds_to?(:form_attributes) ? model.form_attributes : model.fields.map { |f| f[:name] }
+  search_attributes = model.responds_to?(:search_attributes) ? model.search_attributes : model.fields.map { |f| f[:name] }
   per_page = 20
   resource = {
-    model: model,
-    repo: repo,
+    model:                 model,
+    repo:                  repo,
     collection_attributes: collection_attributes,
-    show_page_attributes: show_page_attributes,
-    form_attributes: form_attributes}
+    show_page_attributes:  show_page_attributes,
+    form_attributes:       form_attributes,
+  }
 
   CrectoAdmin.add_resource(resource)
 
@@ -76,6 +90,19 @@ def self.admin_resource(model : Crecto::Model.class, repo, **opts)
     query = Crecto::Repo::Query.limit(per_page).offset(offset)
     data = repo.all(model, query)
     count = repo.aggregate(model, :count, resource[:model].primary_key_field_symbol).as(Int64)
+    ecr("index")
+  end
+
+  get "/admin/#{model.table_name}/search" do |ctx|
+    offset = ctx.params.query["offset"]? ? ctx.params.query["offset"].to_i : 0
+    search_string = search_attributes.map { |sa| "#{CrectoAdmin.field_cast(model.table_name, repo)} LIKE ?" }.join(" OR ")
+    search_params = (1..search_attributes.size).map { |x| "%#{CrectoAdmin.search_param(ctx)}%" }
+    query = Crecto::Repo::Query
+      .limit(per_page)
+      .where(search_string, search_params)
+      .offset(offset)
+    data = repo.all(model, query)
+    count = repo.aggregate(model, :count, resource[:model].primary_key_field_symbol, Crecto::Repo::Query.where(search_string, search_params)).as(Int64)
     ecr("index")
   end
 
@@ -88,7 +115,7 @@ def self.admin_resource(model : Crecto::Model.class, repo, **opts)
     if ctx.params.query["_method"]? == "put"
       item = repo.get!(model, ctx.params.url["id"])
       query_hash = ctx.params.query.to_h
-      item.class.fields.select{|f| f[:type] == "Bool"}.each do |field|
+      item.class.fields.select { |f| f[:type] == "Bool" }.each do |field|
         query_hash[field[:name].to_s] = query_hash[field[:name].to_s]? == "on" ? "true" : "false"
       end
       item.update_from_hash(query_hash)
@@ -108,7 +135,7 @@ def self.admin_resource(model : Crecto::Model.class, repo, **opts)
   post "/admin/#{model.table_name}" do |ctx|
     item = model.new
     query_hash = ctx.params.body.to_h
-    item.class.fields.select{|f| f[:type] == "Bool"}.each do |field|
+    item.class.fields.select { |f| f[:type] == "Bool" }.each do |field|
       query_hash[field[:name].to_s] = query_hash[field[:name].to_s]? == "on" ? "true" : "false"
     end
     item.update_from_hash(query_hash)

@@ -1,8 +1,19 @@
 <div class="row">
   <div class="col s10 offset-s1">
-    total rows: <%= count %>
+    <div class="row search">
+      <form class="col s6 offset-s6" method="GET" action="/admin/<%= resource[:model].table_name %>/search">
+        <div class="input-field">
+          <i class="material-icons prefix">search</i>
+          <input id="search-field" type="text" name="search" value="<%= CrectoAdmin.search_param(ctx) %>">
+          <label for="search-field">Search <%= resource[:model].table_name %></label>
+        </div>
+      </form>
+    </div>
 
-    <a class="waves-effect waves-light btn" href="/admin/<%= resource[:model].table_name %>/new"><i class="material-icons left">add</i>new</a>
+    total rows: <%= count %>
+    <% unless CrectoAdmin.search_param(ctx) %>
+      <a class="waves-effect waves-light btn" href="/admin/<%= resource[:model].table_name %>/new"><i class="material-icons left">add</i>new</a>
+    <% end %>
 
     <table class="striped highlight">
       <thead>
