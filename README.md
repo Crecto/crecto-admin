@@ -4,6 +4,8 @@ Admin dashboard for Crecto and your database.  Similar to [Rails Admin](https://
 
 Work in progress.
 
+![crecto admin](http://i.imgur.com/oEoF0ux.png)
+
 ## Installation
 
 Add this to your application's `shard.yml`:
