@@ -30,15 +30,19 @@ Kemal.run
 To modify the behaviour and display of index, show, form fields and search fields, the following methods can be added to Crecto model classes.  All return an array of string values for fields of the model.
 
 * The attributes shown on the index page:
+
 `def collection_attributes() : Array(String)`
 
 * The attributes show on the show page:
+
 `def show_page_attributes() : Array(String)`
 
 * The attributes in the create and update forms:
+
 `def form_attributes() : Array(String)`
 
 * The attributes used when searching:
+
 `def search_attributes() : Array(String)`
 
 ## Development
