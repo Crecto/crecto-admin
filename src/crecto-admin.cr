@@ -5,6 +5,8 @@ class CrectoAdmin::FileStorage
   BakedFileSystem.load("../public", __DIR__)
 end
 
+# Baked file system borrowed heavily from askn/racon:
+# https://github.com/askn/racon/blob/master/src/racon.cr#L9-L34
 CrectoAdmin::FileStorage.files.each do |file|
   get(file.path) do |env|
     env.response.content_type = file.mime_type
@@ -20,11 +22,11 @@ CrectoAdmin::FileStorage.files.each do |file|
   end
 end
 
-macro ecr(xxx)
-  {% if xxx.starts_with?('_') %}
-    render "#{{{__DIR__}}}/views/#{{{xxx}}}.ecr"
+macro ecr(tmplate)
+  {% if tmplate.starts_with?('_') %}
+    render "#{{{__DIR__}}}/views/#{{{tmplate}}}.ecr"
   {% else %}
-    render "#{{{__DIR__}}}/views/#{{{xxx}}}.ecr", "#{{{__DIR__}}}/views/admin_layout.ecr"
+    render "#{{{__DIR__}}}/views/#{{{tmplate}}}.ecr", "#{{{__DIR__}}}/views/admin_layout.ecr"
   {% end %}
 end
 
