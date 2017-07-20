@@ -14,3 +14,7 @@
 .item-link {
   cursor: pointer;
 }
+
+.sign-in-form {
+  margin-top: 50px;
+}

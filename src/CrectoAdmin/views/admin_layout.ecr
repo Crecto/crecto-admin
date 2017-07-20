@@ -24,6 +24,12 @@
         <nav>
           <div class="nav-wrapper">
             <a href="/admin" class="brand-logo">Admin</a>
+            <% if CrectoAdmin.admin_signed_in?(ctx) && CrectoAdmin.config.auth %>
+              <div class="right">
+                signed in as <%= CrectoAdmin.current_user(ctx).to_query_hash[CrectoAdmin.config.auth_model_identifier.not_nil!] %>
+                <a href="/admin/sign_out">sign out</a>
+              </div>
+            <% end %>
           </div>
         </nav>
       </div>
@@ -31,27 +37,17 @@
 
     <div id="main">
       <div id="wrapper">
-        <aside id="left-siebar-nav">
-          <ul id="slide-out" class="side-nav fixed leftside-navigation">
-          <!-- TODO: for logged in users, show information
-            <li>
-              <div class="userView">
-                <div class="background">
-                  
-                </div>
-                <a href="#!name"><span class="white-text name">John Doe</span></a>
-                <a href="#!email"><span class="white-text email">John Doe</span></a>
-              </div>
-            </li>
-            -->
-
-            <% CrectoAdmin.resources.each do |resource| %>
-              <li>
-                <a href="/admin/<%= resource[:model].table_name %>"><%= resource[:model].table_name.split('_').map(&.capitalize).join(' ') %></a>
-              </li>
-            <% end %>
-          </ul>
-        </aside>
+        <% if CrectoAdmin.admin_signed_in?(ctx) %>
+          <aside id="left-siebar-nav">
+            <ul id="slide-out" class="side-nav fixed leftside-navigation">
+              <% CrectoAdmin.resources.each do |resource| %>
+                <li>
+                  <a href="/admin/<%= resource[:model].table_name %>"><%= resource[:model].table_name.split('_').map(&.capitalize).join(' ') %></a>
+                </li>
+              <% end %>
+            </ul>
+          </aside>
+        <% end %>
 
         <section id="content">
           <%= content %>

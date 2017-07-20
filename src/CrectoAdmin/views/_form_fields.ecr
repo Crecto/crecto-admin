@@ -6,6 +6,7 @@
   <% field_type = item.class.fields.select{|f| f[:name] == attr }[0][:type] %>
   <div class="row">
     <div class="input-field col s8">
+      <input type="hidden" name="authenticity_token" value="<%= ctx.session.string("csrf") %>" />
       <% if field_type == "Bool" %>
         <input placeholder="<%= attr %>" name="<%= attr %>" id="<%= attr %>" type="checkbox" <% if query_hash[attr] == true %>checked="checked"<% end %>>
         <label for="<%= attr %>"><%= attr %></label>

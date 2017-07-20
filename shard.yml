@@ -25,6 +25,12 @@ development_dependencies:
     github: kemalcr/kemal
     version: 0.19.0
 
+  kemal-csrf:
+    github: kemalcr/kemal-csrf
+
+  kemal-session:
+    github: kemalcr/kemal-session
+
   pg:
     github: will/crystal-pg
     version: 0.13.3

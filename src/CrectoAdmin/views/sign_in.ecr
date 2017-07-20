@@ -1,0 +1,10 @@
+<div class="row">
+  <div class="col s6 offset-s1">
+    <form action="/admin/sign_in" method="post" class="sign-in-form">
+      <input type="hidden" name="authenticity_token" value="<%= ctx.session.string("csrf") %>" />
+      <input type="text" name="<%= CrectoAdmin.config.auth_model_identifier.not_nil!.to_s %>" placeholder="<%= CrectoAdmin.config.auth_model_identifier.not_nil!.to_s %>" />
+      <input type="password" name="password" placeholder="password" />
+      <button type="submit">Submit</button>
+    </form>
+  </div>
+</div>

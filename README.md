@@ -47,6 +47,24 @@ To modify the behaviour and display of index, show, form fields and search field
 
 `def search_attributes() : Array(String)`
 
+## Authentication
+
+#### Database authentication
+
+Add a config block to define some information about your authentication.
+
+```crystal
+CrectoAdmin.config do |c|
+  c.auth = CrectoAdmin::DatabaseAuth
+  c.auth_model = User
+  c.auth_model_identifier = :email
+  c.auth_method = ->(email : String, password : String) {
+    user = Repo.get_by!(User, email: email)
+    user.password_valid?(password)
+  }
+end
+```
+
 ## Development
 
 TODO: Write development instructions here

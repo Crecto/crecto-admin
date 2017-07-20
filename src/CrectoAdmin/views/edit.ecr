@@ -5,7 +5,7 @@
 </div>
 
 <div class="row">
-  <form class="col s10 offset-s1" action="/admin/<%= item.class.table_name %>/<%= item.pkey_value %>">
+  <form class="col s10 offset-s1" method="post" action="/admin/<%= item.class.table_name %>/<%= item.pkey_value %>">
     <input type="hidden" name="_method" value="put" />
     <%= ecr "_form_fields" %>
     <button class="btn waves-effect waves-light" type="submit" name="action">Submit
