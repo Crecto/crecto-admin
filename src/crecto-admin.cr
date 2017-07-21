@@ -1,5 +1,6 @@
 require "kemal-csrf"
 require "kemal-session"
+require "kemal-flash"
 require "./CrectoAdmin/*"
 
 module CrectoAdmin
@@ -51,6 +52,16 @@ module CrectoAdmin
       end
     else
       true
+    end
+  end
+
+  def self.changeset_errors(changeset)
+    String.build do |io|
+      changeset.errors.each_with_index do |error, index|
+        io << "<br /> " if index != 0
+        io << "#{error[:field]} " unless error[:field] == "_base"
+        io << "#{error[:message]}"
+      end
     end
   end
 end

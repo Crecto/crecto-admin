@@ -14,6 +14,7 @@ def self.admin_resource(model : Crecto::Model.class, repo, **opts)
 
   CrectoAdmin.add_resource(resource)
 
+  # Index
   get "/admin/#{model.table_name}" do |ctx|
     offset = ctx.params.query["offset"]? ? ctx.params.query["offset"].to_i : 0
     query = Crecto::Repo::Query.limit(per_page).offset(offset)
@@ -22,6 +23,7 @@ def self.admin_resource(model : Crecto::Model.class, repo, **opts)
     ecr("index")
   end
 
+  # Search
   get "/admin/#{model.table_name}/search" do |ctx|
     offset = ctx.params.query["offset"]? ? ctx.params.query["offset"].to_i : 0
     search_string = search_attributes.map { |sa| "#{CrectoAdmin.field_cast(model.table_name, repo)} LIKE ?" }.join(" OR ")
@@ -35,27 +37,19 @@ def self.admin_resource(model : Crecto::Model.class, repo, **opts)
     ecr("index")
   end
 
+  # New form
   get "/admin/#{model.table_name}/new" do |ctx|
     item = model.new
     ecr("new")
   end
 
+  # View
   get "/admin/#{model.table_name}/:id" do |ctx|
-    if ctx.params.query["_method"]? == "put"
-      item = repo.get!(model, ctx.params.url["id"])
-      query_hash = ctx.params.query.to_h
-      item.class.fields.select { |f| f[:type] == "Bool" }.each do |field|
-        query_hash[field[:name].to_s] = query_hash[field[:name].to_s]? == "on" ? "true" : "false"
-      end
-      item.update_from_hash(query_hash)
-      repo.update(item)
-      ctx.redirect "/admin/#{model.table_name}/#{item.pkey_value}"
-    else
-      item = repo.get!(model, ctx.params.url["id"])
-      ecr("show")
-    end
+    item = repo.get!(model, ctx.params.url["id"])
+    ecr("show")
   end
 
+  # Update
   put "/admin/#{model.table_name}/:pid_id" do |ctx|
     item = repo.get!(model, ctx.params.url["pid_id"])
     query_hash = ctx.params.body.to_h
@@ -63,16 +57,26 @@ def self.admin_resource(model : Crecto::Model.class, repo, **opts)
       query_hash[field[:name].to_s] = query_hash[field[:name].to_s]? == "on" ? "true" : "false"
     end
     item.update_from_hash(query_hash)
-    repo.update(item)
-    ctx.redirect "/admin/#{model.table_name}/#{item.pkey_value}"
+    changeset = repo.update(item)
+
+    if changeset.errors.any?
+      ctx.flash["error"] = CrectoAdmin.changeset_errors(changeset)
+      ecr("edit")
+    else
+      ctx.flash["success"] = "Updated successfully"
+      ctx.redirect "/admin/#{model.table_name}/#{item.pkey_value}"
+    end
   end
 
+  # Edit form
   get "/admin/#{model.table_name}/:id/edit" do |ctx|
     item = repo.get!(model, ctx.params.url["id"])
     ecr("edit")
   end
 
+  # Create
   post "/admin/#{model.table_name}" do |ctx|
+    puts "create"
     item = model.new
     query_hash = ctx.params.body.to_h
     item.class.fields.select { |f| f[:type] == "Bool" }.each do |field|
@@ -80,13 +84,27 @@ def self.admin_resource(model : Crecto::Model.class, repo, **opts)
     end
     item.update_from_hash(query_hash)
     changeset = repo.insert(item)
-    # TODO: handle changeset errors
-    ctx.redirect "/admin/#{model.table_name}/#{changeset.instance.pkey_value}"
+
+    if changeset.errors.any?
+      ctx.flash["error"] = CrectoAdmin.changeset_errors(changeset)
+      ecr("new")
+    else
+      ctx.flash["success"] = "Created sucessfully"
+      ctx.redirect "/admin/#{model.table_name}/#{changeset.instance.pkey_value}"
+    end
   end
 
+  # Delete
   get "/admin/#{model.table_name}/:id/delete" do |ctx|
     item = repo.get!(model, ctx.params.url["id"])
-    repo.delete(item)
-    ctx.redirect "/admin/#{model.table_name}"
+    changeset = repo.delete(item)
+
+    if changeset.errors.any?
+      ctx.flash["error"] = CrectoAdmin.changeset_errors(changeset)
+      ecr("show")
+    else
+      ctx.flash["success"] = "Deleted successfully"
+      ctx.redirect "/admin/#{model.table_name}"
+    end
   end
 end

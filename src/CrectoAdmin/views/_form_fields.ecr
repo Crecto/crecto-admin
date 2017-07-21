@@ -24,6 +24,9 @@
       <% elsif field_type == "String" %>
         <input placeholder="<%= attr %>" name="<%= attr %>" id="<%= attr %>" type="text" value="<%= query_hash[attr] %>">
         <label for="<%= attr %>"><%= attr %></label>
+      <% elsif field_type == "Json" %>
+        <input placeholder="<%= attr %>" name="<%= attr %>" id="<%= attr %>" type="text" value='<%= query_hash[attr] %>'>
+        <label for="<%= attr %>"><%= attr %></label>
       <% else %>
         <input placeholder="<%= attr %>" name="<%= attr %>" id="<%= attr %>" type="text" value="<%= query_hash[attr] %>">
         <label for="<%= attr %>"><%= attr %></label>

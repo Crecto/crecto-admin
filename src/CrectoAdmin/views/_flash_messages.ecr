@@ -1,0 +1,11 @@
+<% if ctx.flash["success"]? %>
+<script>
+  Materialize.toast("<%= ctx.flash["success"] %>", 5000)
+</script>
+<% end %>
+
+<% if ctx.flash["error"]? %>
+<script>
+  Materialize.toast("<%= ctx.flash["error"] %>", 5000)
+</script>
+<% end %>
