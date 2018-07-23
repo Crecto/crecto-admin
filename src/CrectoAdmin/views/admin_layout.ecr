@@ -7,52 +7,84 @@
     <title>Admin</title>
 
     <link href="http://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.98.2/css/materialize.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.1/css/bulma.min.css">
     <link rel="stylesheet" href="/css/materialize.clockpicker.css">
     <link rel="stylesheet" href="/css/main.css">
 
-    <script
-  src="https://code.jquery.com/jquery-3.2.1.min.js"
-  integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
-  crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js"
+      integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+      crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.98.2/js/materialize.min.js"></script>
     <script src="/js/materialize.clockpicker.js"></script>
+    <script defer src="https://use.fontawesome.com/releases/v5.1.0/js/all.js"></script>
   </head>
   <body>
-    <header>
-      <div class="navbar-fixed">
-        <nav>
-          <div class="nav-wrapper">
-            <a href="/admin" class="brand-logo">Admin</a>
+    <nav class="navbar has-shadow">
+      <div class="container">
+        <div class="navbar-brand">
+          <a class="navbar-item is-size-4 has-text-weight-bold has-text-black" href="/admin">Crecto Admin</a>
+        </div>
+        <div class="navbar-menu is-active">
+          <div class="navbar-end">
             <% if CrectoAdmin.admin_signed_in?(ctx) && CrectoAdmin.config.auth %>
-              <div class="right">
-                signed in as <%= CrectoAdmin.current_user(ctx).to_query_hash[CrectoAdmin.config.auth_model_identifier.not_nil!] %>
-                <a href="/admin/sign_out">sign out</a>
+              <a class="navbar-item">
+                Signed in as <%= CrectoAdmin.current_user(ctx).to_query_hash[CrectoAdmin.config.auth_model_identifier.not_nil!] %>
+              </a>
+              <div class="navbar-item">
+                <div class="field is-grouped">
+                  <p class="control">
+                    <a class="button" href="/admin/sign_out">
+                      <span class="icon">
+                        <i class="fas fa-sign-out-alt"></i>
+                      </span>
+                      <span>Sign Out</span>
+                    </a>
+                  </p>
+                </div>
               </div>
             <% end %>
           </div>
-        </nav>
+        </div>
       </div>
-    </header>
+    </nav>
 
-    <div id="main">
-      <div id="wrapper">
+    <div id="main" class="container is-fullhd">
+      <div class="columns">
         <% if CrectoAdmin.admin_signed_in?(ctx) %>
-          <aside id="left-siebar-nav">
-            <ul id="slide-out" class="side-nav fixed leftside-navigation">
-              <% CrectoAdmin.resources.each do |resource| %>
-                <li>
-                  <a href="/admin/<%= resource[:model].table_name %>"><%= resource[:model].table_name.split('_').map(&.capitalize).join(' ') %></a>
-                </li>
-              <% end %>
-            </ul>
-          </aside>
+          <div class="column is-narrow">
+            <aside class="menu left-siebar-nav">
+              <ul class="menu-list">
+                <% if CrectoAdmin.current_table(ctx) == "dashboard" %>
+                  <li><a class="is-active" href="/admin/dashboard">Dashboard</a></li>
+                <% else %>
+                  <li><a href="/admin/dashboard">Dashboard</a></li>
+                <% end %>
+                <% CrectoAdmin.resources.each do |resource| %>
+                  <li>
+                    <% if CrectoAdmin.current_table(ctx) == resource[:model].table_name %>
+                      <a class="is-active" href="/admin/<%= resource[:model].table_name %>">
+                        <%= resource[:model].table_name.split('_').map(&.capitalize).join(' ') %>
+                      </a>
+                    <% else %>
+                      <a href="/admin/<%= resource[:model].table_name %>">
+                        <%= resource[:model].table_name.split('_').map(&.capitalize).join(' ') %>
+                      </a>
+                    <% end %>
+                  </li>
+                <% end %>
+              </ul>
+            </aside>
+          </div>
         <% end %>
-
-        <section id="content">
-          <%= ecr "_flash_messages" %>
-          <%= content %>
-        </section>
+        <div class="column">
+          <% if CrectoAdmin.admin_signed_in?(ctx) %>
+          <h4 class="title is-4"><%= CrectoAdmin.current_table(ctx).split('_').map(&.capitalize).join(' ') %></h4>
+          <% end %>
+          <section id="content">
+            <%= ecr "_flash_messages" %>
+            <%= content %>
+          </section>
+        </div>
       </div>
     </div>
   </body>

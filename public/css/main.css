@@ -1,14 +1,9 @@
-#wrapper {
-  padding-left: 240px;
+#main {
+  margin-top: 15px;
 }
 
-#wrapper .side-nav {
-  top: 64px;
+#main .left-siebar-nav {
   width: 240px;
-}
-
-#wrapper .side-nav .userView .background {
-  background-color: gray;
 }
 
 .item-link {
