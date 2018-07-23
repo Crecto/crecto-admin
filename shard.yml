@@ -4,7 +4,7 @@ version: 0.1.0
 authors:
   - Nick Franken <shnick@gmail.com>
 
-crystal: 0.22.0
+crystal: 0.25.1
 
 license: MIT
 
@@ -30,14 +30,10 @@ dependencies:
 development_dependencies:
   mysql:
     github: crystal-lang/crystal-mysql
-    version: 0.3.2
 
   pg:
     github: will/crystal-pg
-    version: 0.13.3
 
   sqlite3:
-    github: Zhomart/crystal-sqlite3
-    # github: crystal-lang/crystal-sqlite3
-    # version: 0.8.2
+    github: crystal-lang/crystal-sqlite3
     branch: master
