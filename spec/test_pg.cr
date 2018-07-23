@@ -31,7 +31,7 @@ end
 class Post < Crecto::Model
   schema "posts" do
     field :user_id, Int64
-    field :contect, String
+    field :content, String
   end
 end
 
