@@ -1,11 +1,19 @@
 <% if ctx.flash["success"]? %>
-<script>
-  Materialize.toast("<%= ctx.flash["success"] %>", 5000)
-</script>
+  <div class="notification is-success flash-message">
+    <%= ctx.flash["success"] %>
+  </div>
 <% end %>
 
 <% if ctx.flash["error"]? %>
-<script>
-  Materialize.toast("<%= ctx.flash["error"] %>", 5000)
-</script>
+  <div class="notification is-danger flash-message">
+    <%= ctx.flash["error"] %>
+  </div>
 <% end %>
+
+<script>
+  $(function(){
+    setTimeout(function(){
+      $('.notification').fadeOut()
+    }, 5000)
+  })
+</script>

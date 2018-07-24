@@ -1,21 +1,38 @@
-<div class="row">
-  <div class="col s10 offset-s1">
-  <h4><%= item.responds_to?(:name) ? item.name : item.pkey_value %></h4>
+<div class="is-size-4 has-text-weight-bold">
+  <%= resource[:model].table_name.split('_').map(&.capitalize).join(' ') %>
+</div>
+
+<div class="columns" style="margin-bottom:0px;">
+  <div class="column">
+    <span class="is-size-6 has-text-weight-bold" style="line-height:2.3;">
+      <%= item.responds_to?(:name) ? item.name : item.pkey_value %>
+    </span>
   </div>
 </div>
 
-<div class="row">
-  <div class="col s10 offset-s1">
-    <a class="waves-effect waves-light btn" href="/admin/<%= item.class.table_name %>/<%= item.pkey_value %>/edit"><i class="material-icons left">mode_edit</i>edit</a>
-    <a class="waves-effect waves-light btn red" href="/admin/<%= item.class.table_name %>/<%= item.pkey_value %>/delete"><i class="material-icons left">delete</i>delete</a>
-    <% resource[:show_page_attributes].each do |attr| %>
-    <% query_hash = item.to_query_hash %>
-      <div class="row">
-        <div class="input-field col s8">
-          <h5><%= attr %></h5>
-          <p><%= query_hash[attr] %></p>
-        </div>
+<div class="field is-grouped">
+  <p class="control">
+    <a class="button is-info" href="/admin/<%= item.class.table_name %>/<%= item.pkey_value %>/edit">
+      <span class="icon"><i class="fas fa-edit"></i></span>
+      <span>Edit</span>
+    </a>
+  </p>
+  <p class="control">
+    <a class="button is-danger" href="/admin/<%= item.class.table_name %>/<%= item.pkey_value %>/delete">
+      <span class="icon"><i class="fas fa-trash"></i></span>
+      <span>Delete</span>
+    </a>
+  </p>
+</div>
+
+<div>
+  <% query_hash = item.to_query_hash %>
+  <% resource[:show_page_attributes].each do |attr| %>
+    <div class="field">
+      <label class="label"><%= attr %></label>
+      <div class="control">
+        <pre><%= query_hash[attr] %></pre>
       </div>
-    <% end %>
-  </div>
+    </div>
+  <% end %>
 </div>
