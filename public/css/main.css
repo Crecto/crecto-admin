@@ -26,3 +26,12 @@
 .sign-in-form {
   margin-top: 50px;
 }
+
+.flash-message {
+  position: absolute;
+  top: 30px;
+  right: 0px;
+  width: 400px;
+  padding: 10px;
+  z-index: 10;
+}
