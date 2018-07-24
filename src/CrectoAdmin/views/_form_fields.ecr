@@ -1,36 +1,43 @@
-<% resource[:show_page_attributes].each do |attr| %>
+<% resource[:form_attributes].each do |attr| %>
   <% next if attr == item.class.primary_key_field_symbol %>
   <% next if attr.to_s == item.class.updated_at_field %>
   <% next if attr.to_s == item.class.created_at_field %>
   <% query_hash = item.to_query_hash %>
   <% field_type = item.class.fields.select{|f| f[:name] == attr }[0][:type] %>
-  <div class="row">
-    <div class="input-field col s8">
-      <input type="hidden" name="authenticity_token" value="<%= ctx.session.string("csrf") %>" />
-      <% if field_type == "Bool" %>
-        <input placeholder="<%= attr %>" name="<%= attr %>" id="<%= attr %>" type="checkbox" <% if query_hash[attr] == true %>checked="checked"<% end %>>
-        <label for="<%= attr %>"><%= attr %></label>
-      <% elsif field_type == "Time" %>
-        <input id="<%= attr %>" type="hidden" name="<%= attr %>" value="<%= query_hash[attr] %>">
-        <div class="row">
-          <div class="col s6">
-            <input class="datepicker" name="<%= attr %>-date" type="date" data-original="<%= query_hash[attr] %>">
-            <label for="<%= attr %>"><%= attr %></label>
-          </div>
-          <div class="col s6">
-            <input class="timepicker" name="<%= attr %>-time" type="time" data-original="<%= query_hash[attr] %>">
-          </div>
+  <div class="field">
+    <% if field_type == "Bool" %>
+      <div class="control">
+        <label class="checkbox">
+          <input placeholder="<%= attr %>" name="<%= attr %>" id="<%= attr %>" type="checkbox" <% if query_hash[attr] == true %>checked="checked"<% end %>>
+          <%= attr %>
+        </label>
+      </div>
+    <% elsif field_type == "Time" %>
+      <input id="<%= attr %>" type="hidden" name="<%= attr %>" value="<%= query_hash[attr] %>">
+      <div class="row">
+        <div class="col s6">
+          <input class="datepicker" name="<%= attr %>-date" type="date" data-original="<%= query_hash[attr] %>">
+          <label for="<%= attr %>"><%= attr %></label>
         </div>
-      <% elsif field_type == "String" %>
-        <input placeholder="<%= attr %>" name="<%= attr %>" id="<%= attr %>" type="text" value="<%= query_hash[attr] %>">
-        <label for="<%= attr %>"><%= attr %></label>
-      <% elsif field_type == "Json" %>
-        <input placeholder="<%= attr %>" name="<%= attr %>" id="<%= attr %>" type="text" value='<%= query_hash[attr].to_json %>'>
-        <label for="<%= attr %>"><%= attr %></label>
-      <% else %>
-        <input placeholder="<%= attr %>" name="<%= attr %>" id="<%= attr %>" type="text" value="<%= query_hash[attr] %>">
-        <label for="<%= attr %>"><%= attr %></label>
-      <% end %>
-    </div>
+        <div class="col s6">
+          <input class="timepicker" name="<%= attr %>-time" type="time" data-original="<%= query_hash[attr] %>">
+        </div>
+      </div>
+    <% elsif field_type == "String" %>
+      <label class="label"><%= attr %></label>
+      <div class="control">
+        <input class="input" placeholder="<%= attr %>" name="<%= attr %>" id="<%= attr %>" type="text" value="<%= query_hash[attr] %>">
+      </div>
+    <% elsif field_type == "Json" %>
+      <label class="label"><%= attr %></label>
+      <div class="control">
+        <input class="input" placeholder="<%= attr %>" name="<%= attr %>" id="<%= attr %>" type="text" value='<%= query_hash[attr].to_json %>'>
+      </div>
+    <% else %>
+      <label class="label"><%= attr %></label>
+      <div class="control">
+        <input class="input" placeholder="<%= attr %>" name="<%= attr %>" id="<%= attr %>" type="text" value="<%= query_hash[attr] %>">
+      </div>
+    <% end %>
   </div>
 <% end %>

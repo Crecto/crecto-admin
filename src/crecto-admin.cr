@@ -9,10 +9,10 @@ module CrectoAdmin
   AUTH_ALLOWED_PATHS = ["/admin", "/admin/sign_in"]
 
   @@resources = Array(NamedTuple(model: Crecto::Model.class,
-  repo: Repo.class,
-  collection_attributes: Array(Symbol),
-  show_page_attributes: Array(Symbol),
-  form_attributes: Array(Symbol))).new
+    repo: Repo.class,
+    collection_attributes: Array(Symbol),
+    show_page_attributes: Array(Symbol),
+    form_attributes: Array(Symbol))).new
 
   def self.add_resource(resource)
     @@resources.push(resource)
@@ -41,6 +41,12 @@ module CrectoAdmin
 
   def self.current_user(ctx)
     Repo.get!(CrectoAdmin.config.auth_model.not_nil!, ctx.session.string(SESSION_KEY))
+  end
+
+  def self.current_table(ctx)
+    ss = ctx.request.path.split("/")
+    return "" if ss.size < 3
+    return ss[2]
   end
 
   def self.admin_signed_in?(ctx)

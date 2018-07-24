@@ -1,20 +1,37 @@
-#wrapper {
-  padding-left: 240px;
+#main {
+  margin-top: 15px;
 }
 
-#wrapper .side-nav {
-  top: 64px;
+#main .left-siebar-nav {
   width: 240px;
 }
 
-#wrapper .side-nav .userView .background {
-  background-color: gray;
+.item-table-container {
+  max-width: 100%;
+  overflow-x: auto;
+  margin-bottom: 15px;
 }
 
-.item-link {
+.item-row {
   cursor: pointer;
+}
+
+.item-cell {
+  word-break: break-word;
+  height: 24px;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .sign-in-form {
   margin-top: 50px;
+}
+
+.flash-message {
+  position: absolute;
+  top: 30px;
+  right: 0px;
+  width: 400px;
+  padding: 10px;
+  z-index: 10;
 }
