@@ -6,8 +6,21 @@
   width: 240px;
 }
 
-.item-link {
+.item-table-container {
+  max-width: 100%;
+  overflow-x: auto;
+  margin-bottom: 15px;
+}
+
+.item-row {
   cursor: pointer;
+}
+
+.item-cell {
+  word-break: break-word;
+  height: 24px;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .sign-in-form {

@@ -39,15 +39,15 @@ end
 admin_resource(User, Repo)
 admin_resource(Post, Repo)
 
-CrectoAdmin.config do |c|
-  c.auth = CrectoAdmin::DatabaseAuth
-  c.auth_model = User
-  c.auth_model_identifier = :email
-  c.auth_method = ->(email : String, password : String) {
-    user = Repo.get_by!(User, email: email)
-    user.password_valid?(password)
-  }
-end
+# CrectoAdmin.config do |c|
+#  c.auth = CrectoAdmin::DatabaseAuth
+#  c.auth_model = User
+#  c.auth_model_identifier = :email
+#  c.auth_method = ->(email : String, password : String) {
+#    user = Repo.get_by!(User, email: email)
+#    user.password_valid?(password)
+#  }
+# end
 
 Kemal::Session.config do |config|
   config.secret = "my_super_secret"

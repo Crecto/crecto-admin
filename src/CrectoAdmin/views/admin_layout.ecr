@@ -48,7 +48,7 @@
       </div>
     </nav>
 
-    <div id="main" class="container is-fullhd">
+    <div id="main" class="container is-fluid">
       <div class="columns">
         <% if CrectoAdmin.admin_signed_in?(ctx) %>
           <div class="column is-narrow">
@@ -77,9 +77,6 @@
           </div>
         <% end %>
         <div class="column">
-          <% if CrectoAdmin.admin_signed_in?(ctx) %>
-          <h4 class="title is-4"><%= CrectoAdmin.current_table(ctx).split('_').map(&.capitalize).join(' ') %></h4>
-          <% end %>
           <section id="content">
             <%= ecr "_flash_messages" %>
             <%= content %>

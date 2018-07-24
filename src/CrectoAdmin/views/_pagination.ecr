@@ -1,22 +1,28 @@
-<div class="pagination">
+<div>
   <% pages = (count.to_f / per_page.to_f).ceil.to_i %>
   <% current_page = (offset.to_i / per_page) + 1 %>
 
-  <ul class="pagination">
+  <nav class="pagination" role="navigation" aria-label="pagination">
     <% if current_page == 1 %>
-      <li class="disabled"><a href="#!"><i class="material-icons">chevron_left</i></a></li>
+      <a class="pagination-previous" title="This is the first page" disabled>Previous</a>
     <% else %>
-      <li><a href="/admin/<%= resource[:model].table_name %><%= "/search" if CrectoAdmin.search_param(ctx) %>?offset=<%= (current_page - 2) * per_page %><%= "&search=#{CrectoAdmin.search_param(ctx)}" if CrectoAdmin.search_param(ctx) %>"><i class="material-icons">chevron_left</i></a></li>
-    <% end %>
-  
-    <% (1..pages).each do |page| %>
-      <li <% if page == current_page %>class="active"<% else %>class="waves-effect"<% end %>><a href="/admin/<%= resource[:model].table_name %><%= "/search" if CrectoAdmin.search_param(ctx) %>?offset=<%= (page - 1) * per_page %><%= "&search=#{CrectoAdmin.search_param(ctx)}" if CrectoAdmin.search_param(ctx) %>"><%= page %></a></li>
+      <a class="pagination-previous" href="/admin/<%= resource[:model].table_name %><%= "/search" if CrectoAdmin.search_param(ctx) %>?offset=<%= (current_page - 2) * per_page %><%= "&search=#{CrectoAdmin.search_param(ctx)}" if CrectoAdmin.search_param(ctx) %>">Previous</a>
     <% end %>
 
     <% if current_page == pages %>
-      <li class="disabled"><a href="#!"><i class="material-icons">chevron_right</i></a></li>
+      <a class="pagination-next" disabled>Next page</a>
     <% else %>
-      <li><a href="/admin/<%= resource[:model].table_name %><%= "/search" if CrectoAdmin.search_param(ctx) %>?offset=<%= current_page * per_page %><%= "&search=#{CrectoAdmin.search_param(ctx)}" if CrectoAdmin.search_param(ctx) %>"><i class="material-icons">chevron_right</i></a></li>
+      <a class="pagination-next" href="/admin/<%= resource[:model].table_name %><%= "/search" if CrectoAdmin.search_param(ctx) %>?offset=<%= current_page * per_page %><%= "&search=#{CrectoAdmin.search_param(ctx)}" if CrectoAdmin.search_param(ctx) %>">Next page</a>
     <% end %>
-  </ul>
+
+    <ul class="pagination-list">
+      <% (1..pages).each do |page| %>
+        <% if page == current_page %>
+          <a class="pagination-link is-current" aria-current="page" href="/admin/<%= resource[:model].table_name %><%= "/search" if CrectoAdmin.search_param(ctx) %>?offset=<%= (page - 1) * per_page %><%= "&search=#{CrectoAdmin.search_param(ctx)}" if CrectoAdmin.search_param(ctx) %>"><%= page %></a>
+        <% else %>
+          <a class="pagination-link" href="/admin/<%= resource[:model].table_name %><%= "/search" if CrectoAdmin.search_param(ctx) %>?offset=<%= (page - 1) * per_page %><%= "&search=#{CrectoAdmin.search_param(ctx)}" if CrectoAdmin.search_param(ctx) %>"><%= page %></a>
+        <% end %>
+      <% end %>
+    </ul>
+  </nav>
 </div>
