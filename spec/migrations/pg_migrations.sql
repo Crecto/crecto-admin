@@ -9,6 +9,8 @@ CREATE TABLE users(
   count integer,
   score float,
   is_active bool,
+  first_posted timestamp without time zone,
+  last_posted timestamp without time zone,
   created_at timestamp without time zone,
   updated_at timestamp without time zone
 );
