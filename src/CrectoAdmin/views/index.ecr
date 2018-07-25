@@ -7,20 +7,18 @@
     <span class="is-size-6" style="line-height:2.3;">
       Total rows: <%= count %>
     </span>&nbsp;&nbsp;
-    <% unless CrectoAdmin.search_param(ctx) %>
-      <a class="button" href="/admin/<%= resource[:model].table_name %>/new">
-        <span class="icon">
-          <i class="fas fa-plus"></i>
-        </span>
-        <span>New</span>
-      </a>
-    <% end %>
+    <a class="button" href="/admin/<%= resource[:model].table_name %>/new">
+      <span class="icon">
+        <i class="fas fa-plus"></i>
+      </span>
+      <span>New</span>
+    </a>
   </div>
   <div class="column">
     <form method="GET" action="/admin/<%= resource[:model].table_name %>/search">
       <div class="field">
         <p class="control has-icons-left">
-          <input class="input" type="text" name="search" placeholder="<%= CrectoAdmin.search_param(ctx) %>">
+          <input class="input" type="text" name="search" value="<%= CrectoAdmin.search_param(ctx) %>">
           <span class="icon is-small is-left">
             <i class="fas fa-search"></i>
           </span>
@@ -35,7 +33,9 @@
     <table class="table is-fullwidth is-hoverable is-striped">
     <thead>
       <tr>
+        <th><%= resource[:model].primary_key_field_symbol %></th>
         <% resource[:collection_attributes].each do |attr| %>
+          <% next if attr == resource[:model].primary_key_field_symbol %>
           <th><%= attr %></th>
         <% end %>
       </tr>
@@ -45,7 +45,9 @@
       <% data.each do |item| %>
         <% query_hash = item.to_query_hash %>
         <tr class="item-row" data-href="/admin/<%= item.class.table_name %>/<%= item.pkey_value %>">
+          <td><div class="item-cell"><%= item.pkey_value %></div></td>
           <% resource[:collection_attributes].each do |attr| %>
+            <% next if attr == resource[:model].primary_key_field_symbol %>
             <td><div class="item-cell"><%= query_hash[attr] %></div></td>
           <% end %>
         </tr>

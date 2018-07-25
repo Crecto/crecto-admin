@@ -28,7 +28,14 @@
 
 <div>
   <% query_hash = item.to_query_hash %>
+  <div class="field">
+    <label class="label"><%= resource[:model].primary_key_field_symbol %></label>
+    <div class="control">
+      <pre><%= item.pkey_value %></pre>
+    </div>
+  </div>
   <% resource[:show_page_attributes].each do |attr| %>
+    <% next if attr == resource[:model].primary_key_field_symbol %>
     <div class="field">
       <label class="label"><%= attr %></label>
       <div class="control">
