@@ -21,6 +21,8 @@ class User < Crecto::Model
     field :count, Int32
     field :score, Float64
     field :is_active, Bool
+    field :first_posted, Time
+    field :last_posted, Time
   end
 
   def password_valid?(password : String)
