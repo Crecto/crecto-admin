@@ -84,6 +84,10 @@ get "/admin" do |ctx|
 end
 
 get "/admin/dashboard" do |ctx|
+  counts = [] of Int64
+  CrectoAdmin.resources.each do |resource|
+    counts << resource[:repo].aggregate(resource[:model], :count, resource[:model].primary_key_field_symbol).as(Int64)
+  end
   ecr "dashboard"
 end
 

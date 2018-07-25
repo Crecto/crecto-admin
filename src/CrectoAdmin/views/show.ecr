@@ -18,7 +18,8 @@
     </a>
   </p>
   <p class="control">
-    <a class="button is-danger" href="/admin/<%= item.class.table_name %>/<%= item.pkey_value %>/delete">
+    <a class="button is-danger" href="/admin/<%= item.class.table_name %>/<%= item.pkey_value %>/delete"
+      onclick="return confirm('Are you sure to delete this record from the database?')">
       <span class="icon"><i class="fas fa-trash"></i></span>
       <span>Delete</span>
     </a>
@@ -27,7 +28,14 @@
 
 <div>
   <% query_hash = item.to_query_hash %>
+  <div class="field">
+    <label class="label"><%= resource[:model].primary_key_field_symbol %></label>
+    <div class="control">
+      <pre><%= item.pkey_value %></pre>
+    </div>
+  </div>
   <% resource[:show_page_attributes].each do |attr| %>
+    <% next if attr == resource[:model].primary_key_field_symbol %>
     <div class="field">
       <label class="label"><%= attr %></label>
       <div class="control">
