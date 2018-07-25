@@ -1,1 +1,33 @@
-dashboard
+<div class="is-size-4 has-text-weight-bold">
+  Dashboard
+</div>
+
+<div style="margin-top:10px;">
+  <table class="table is-fullwidth is-hoverable is-striped">
+    <thead>
+      <tr>
+        <th>Model</th>
+        <th>Attributes</th>
+        <th>Records</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      <% CrectoAdmin.resources.each_with_index do |resource, i| %>
+        <tr class="item-row" data-href="/admin/<%= resource[:model].table_name %>">
+          <td><%= resource[:model].table_name.split('_').map(&.capitalize).join(' ') %></td>
+          <td><%= resource[:collection_attributes].map(&.to_s).join(", ") %></td>
+          <td><%= counts[i] %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>
+
+<script>
+$(function(){
+  $('.item-row').on('click', function() {
+    window.location = $(this).data('href')
+  })
+})
+</script>
