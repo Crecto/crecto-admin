@@ -13,15 +13,9 @@
         </label>
       </div>
     <% elsif field_type == "Time" %>
-      <input id="<%= attr %>" type="hidden" name="<%= attr %>" value="<%= query_hash[attr] %>">
-      <div class="row">
-        <div class="col s6">
-          <input class="datepicker" name="<%= attr %>-date" type="date" data-original="<%= query_hash[attr] %>">
-          <label for="<%= attr %>"><%= attr %></label>
-        </div>
-        <div class="col s6">
-          <input class="timepicker" name="<%= attr %>-time" type="time" data-original="<%= query_hash[attr] %>">
-        </div>
+      <label class="label"><%= attr %></label>
+      <div class="control">
+        <input id="<%= attr %>" type="text" class="input datetime-picker" name="<%= attr %>" value="<%= query_hash[attr] %>">
       </div>
     <% elsif field_type == "String" %>
       <label class="label"><%= attr %></label>
