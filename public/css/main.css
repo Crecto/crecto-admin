@@ -9,7 +9,6 @@
 .item-table-container {
   max-width: 100%;
   overflow-x: auto;
-  margin-bottom: 15px;
 }
 
 .item-row {
@@ -17,7 +16,6 @@
 }
 
 .item-cell {
-  word-break: break-word;
   height: 24px;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -31,7 +29,7 @@
   position: absolute;
   top: 30px;
   right: 0px;
-  width: 400px;
+  width: 50%;
   padding: 10px;
   z-index: 10;
 }
