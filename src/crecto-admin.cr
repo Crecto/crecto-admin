@@ -1,3 +1,4 @@
+require "kemal"
 require "kemal-csrf"
 require "kemal-session"
 require "kemal-flash"
@@ -40,7 +41,8 @@ module CrectoAdmin
   end
 
   def self.current_user(ctx)
-    Repo.get!(CrectoAdmin.config.auth_model.not_nil!, ctx.session.string(SESSION_KEY))
+    auth_repo = CrectoAdmin.config.auth_repo.not_nil!
+    auth_repo.get!(CrectoAdmin.config.auth_model.not_nil!, ctx.session.string(SESSION_KEY))
   end
 
   def self.current_table(ctx)
@@ -50,14 +52,10 @@ module CrectoAdmin
   end
 
   def self.admin_signed_in?(ctx)
-    if auth = CrectoAdmin.config.auth
-      if auth == CrectoAdmin::DatabaseAuth
-        ctx.session.string?(SESSION_KEY) && !ctx.session.string(SESSION_KEY).empty?
-      else
-        false
-      end
+    if CrectoAdmin.config.auth == CrectoAdmin::DatabaseAuth
+      ctx.session.string?(SESSION_KEY) && !ctx.session.string(SESSION_KEY).empty?
     else
-      true
+      false
     end
   end
 
@@ -96,9 +94,12 @@ get "/admin/sign_in" do |ctx|
 end
 
 post "/admin/sign_in" do |ctx|
-  if CrectoAdmin.config.auth_method.not_nil!.call(ctx.params.body[CrectoAdmin.config.auth_model_identifier.not_nil!.to_s].to_s, ctx.params.body["password"].to_s)
-    query = Crecto::Repo::Query.where(CrectoAdmin.config.auth_model_identifier.not_nil!, ctx.params.body[CrectoAdmin.config.auth_model_identifier.not_nil!.to_s].to_s).limit(1)
-    users = Repo.all(CrectoAdmin.config.auth_model.not_nil!, query)
+  user_id = ctx.params.body[CrectoAdmin.config.auth_model_identifier.not_nil!.to_s].to_s
+  password = ctx.params.body["password"].to_s
+  auth_repo = CrectoAdmin.config.auth_repo.not_nil!
+  if CrectoAdmin.config.auth_method.not_nil!.call(user_id, password)
+    query = Crecto::Repo::Query.where(CrectoAdmin.config.auth_model_identifier.not_nil!, user_id).limit(1)
+    users = auth_repo.all(CrectoAdmin.config.auth_model.not_nil!, query)
     if users.size == 1
       admin_user = users.first
       ctx.session.string(CrectoAdmin::SESSION_KEY, admin_user.pkey_value.to_s)
@@ -114,4 +115,8 @@ end
 get "/admin/sign_out" do |ctx|
   ctx.session.string(CrectoAdmin::SESSION_KEY, "")
   ctx.redirect "/admin/sign_in"
+end
+
+Kemal::Session.config do |config|
+  config.secret = CrectoAdmin::SESSION_KEY
 end

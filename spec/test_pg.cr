@@ -24,10 +24,6 @@ class User < Crecto::Model
     field :first_posted, Time
     field :last_posted, Time
   end
-
-  def password_valid?(password : String)
-    Crypto::Bcrypt::Password.new(@encrypted_password.not_nil!) == password
-  end
 end
 
 class Post < Crecto::Model
@@ -41,18 +37,10 @@ end
 admin_resource(User, Repo)
 admin_resource(Post, Repo)
 
-# CrectoAdmin.config do |c|
-#  c.auth = CrectoAdmin::DatabaseAuth
-#  c.auth_model = User
-#  c.auth_model_identifier = :email
-#  c.auth_method = ->(email : String, password : String) {
-#    user = Repo.get_by!(User, email: email)
-#    user.password_valid?(password)
-#  }
-# end
-
-Kemal::Session.config do |config|
-  config.secret = "my_super_secret"
+CrectoAdmin.config do |c|
+  c.auth_repo = Repo
+  c.auth_model = User
 end
+
 # Right now Crystal Admin is using kemal to render views
 Kemal.run
