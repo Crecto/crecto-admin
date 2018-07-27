@@ -1,3 +1,4 @@
+require "kemal"
 require "kemal-csrf"
 require "kemal-session"
 require "kemal-flash"
@@ -40,7 +41,7 @@ module CrectoAdmin
   end
 
   def self.current_user(ctx)
-    Repo.get!(CrectoAdmin.config.auth_model.not_nil!, ctx.session.string(SESSION_KEY))
+    ctx.session.string(SESSION_KEY)
   end
 
   def self.current_table(ctx)
@@ -50,15 +51,8 @@ module CrectoAdmin
   end
 
   def self.admin_signed_in?(ctx)
-    if auth = CrectoAdmin.config.auth
-      if auth == CrectoAdmin::DatabaseAuth
-        ctx.session.string?(SESSION_KEY) && !ctx.session.string(SESSION_KEY).empty?
-      else
-        false
-      end
-    else
-      true
-    end
+    return true unless CrectoAdmin.config.auth_enabled
+    ctx.session.string?(SESSION_KEY) && !ctx.session.string(SESSION_KEY).empty?
   end
 
   def self.changeset_errors(changeset)
@@ -96,18 +90,14 @@ get "/admin/sign_in" do |ctx|
 end
 
 post "/admin/sign_in" do |ctx|
-  if CrectoAdmin.config.auth_method.not_nil!.call(ctx.params.body[CrectoAdmin.config.auth_model_identifier.not_nil!.to_s].to_s, ctx.params.body["password"].to_s)
-    query = Crecto::Repo::Query.where(CrectoAdmin.config.auth_model_identifier.not_nil!, ctx.params.body[CrectoAdmin.config.auth_model_identifier.not_nil!.to_s].to_s).limit(1)
-    users = Repo.all(CrectoAdmin.config.auth_model.not_nil!, query)
-    if users.size == 1
-      admin_user = users.first
-      ctx.session.string(CrectoAdmin::SESSION_KEY, admin_user.pkey_value.to_s)
-      ctx.redirect "/admin/dashboard"
-    else
-      ctx.redirect "/admin/sign_in"
-    end
-  else
+  user_identifier = ctx.params.body["user"].to_s
+  password = ctx.params.body["password"].to_s
+  authorized = CrectoAdmin.config.auth_method.not_nil!.call(user_identifier, password)
+  if authorized.empty?
     ctx.redirect "/admin/sign_in"
+  else
+    ctx.session.string(CrectoAdmin::SESSION_KEY, authorized)
+    ctx.redirect "/admin/dashboard"
   end
 end
 
