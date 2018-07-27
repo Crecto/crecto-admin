@@ -41,8 +41,7 @@ module CrectoAdmin
   end
 
   def self.current_user(ctx)
-    auth_repo = CrectoAdmin.config.auth_repo.not_nil!
-    auth_repo.get!(CrectoAdmin.config.auth_model.not_nil!, ctx.session.string(SESSION_KEY))
+    ctx.session.string(SESSION_KEY)
   end
 
   def self.current_table(ctx)
@@ -52,11 +51,8 @@ module CrectoAdmin
   end
 
   def self.admin_signed_in?(ctx)
-    if CrectoAdmin.config.auth == CrectoAdmin::DatabaseAuth
-      ctx.session.string?(SESSION_KEY) && !ctx.session.string(SESSION_KEY).empty?
-    else
-      false
-    end
+    return true unless CrectoAdmin.config.auth_enabled
+    ctx.session.string?(SESSION_KEY) && !ctx.session.string(SESSION_KEY).empty?
   end
 
   def self.changeset_errors(changeset)
@@ -94,29 +90,18 @@ get "/admin/sign_in" do |ctx|
 end
 
 post "/admin/sign_in" do |ctx|
-  user_id = ctx.params.body[CrectoAdmin.config.auth_model_identifier.not_nil!.to_s].to_s
+  user_identifier = ctx.params.body["user"].to_s
   password = ctx.params.body["password"].to_s
-  auth_repo = CrectoAdmin.config.auth_repo.not_nil!
-  if CrectoAdmin.config.auth_method.not_nil!.call(user_id, password)
-    query = Crecto::Repo::Query.where(CrectoAdmin.config.auth_model_identifier.not_nil!, user_id).limit(1)
-    users = auth_repo.all(CrectoAdmin.config.auth_model.not_nil!, query)
-    if users.size == 1
-      admin_user = users.first
-      ctx.session.string(CrectoAdmin::SESSION_KEY, admin_user.pkey_value.to_s)
-      ctx.redirect "/admin/dashboard"
-    else
-      ctx.redirect "/admin/sign_in"
-    end
-  else
+  authorized = CrectoAdmin.config.auth_method.not_nil!.call(user_identifier, password)
+  if authorized.empty?
     ctx.redirect "/admin/sign_in"
+  else
+    ctx.session.string(CrectoAdmin::SESSION_KEY, authorized)
+    ctx.redirect "/admin/dashboard"
   end
 end
 
 get "/admin/sign_out" do |ctx|
   ctx.session.string(CrectoAdmin::SESSION_KEY, "")
   ctx.redirect "/admin/sign_in"
-end
-
-Kemal::Session.config do |config|
-  config.secret = CrectoAdmin::SESSION_KEY
 end

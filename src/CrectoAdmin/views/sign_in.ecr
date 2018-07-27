@@ -3,12 +3,12 @@
     <input type="hidden" name="authenticity_token" value="<%= ctx.session.string("csrf") %>" />
 
     <div class="field">
+      <% user_label = CrectoAdmin.config.auth_model_identifier.nil? ? "user" : CrectoAdmin.config.auth_model_identifier %>
       <label class="label" style="text-transform:capitalize;">
-        <%= CrectoAdmin.config.auth_model_identifier.not_nil!.to_s %>
+        <%= user_label %>
       </label>
       <div class="control has-icons-left">
-        <input class="input" type="text" name="<%= CrectoAdmin.config.auth_model_identifier.not_nil!.to_s %>"
-          placeholder="<%= CrectoAdmin.config.auth_model_identifier.not_nil!.to_s %>">
+        <input class="input" type="text" name="user" placeholder="<%= user_label %>">
         <span class="icon is-small is-left">
           <i class="fas fa-user"></i>
         </span>

@@ -40,6 +40,12 @@ admin_resource(Post, Repo)
 CrectoAdmin.config do |c|
   c.auth_repo = Repo
   c.auth_model = User
+  c.auth_model_identifier = :email
+  c.auth_model_password = :encrypted_password
+end
+
+Kemal::Session.config do |config|
+  config.secret = "my super secret"
 end
 
 # Right now Crystal Admin is using kemal to render views
