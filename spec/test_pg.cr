@@ -1,7 +1,4 @@
 require "pg"
-require "crecto"
-require "kemal"
-require "crypto/bcrypt/password"
 require "../src/crecto-admin"
 
 module Repo
@@ -9,7 +6,7 @@ module Repo
 
   config do |conf|
     conf.adapter = Crecto::Adapters::Postgres
-    conf.uri = ENV["PG_URL"]
+    conf.uri = "postgres://postgres:postgres@localhost:5432/crecto_admin_test"
   end
 end
 

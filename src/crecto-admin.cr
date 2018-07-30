@@ -1,7 +1,9 @@
+require "crecto"
 require "kemal"
 require "kemal-csrf"
 require "kemal-session"
 require "kemal-flash"
+require "crypto/bcrypt/password"
 require "./CrectoAdmin/*"
 
 module CrectoAdmin
