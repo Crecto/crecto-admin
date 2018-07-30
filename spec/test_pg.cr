@@ -54,16 +54,16 @@ class Post < Crecto::Model
   end
 end
 
-# add your models
-admin_resource(User, Repo)
-admin_resource(Post, Repo)
-
 CrectoAdmin.config do |c|
   c.auth_repo = Repo
   c.auth_model = User
   c.auth_model_identifier = :email
   c.auth_model_password = :encrypted_password
 end
+
+# add your models
+admin_resource(User, Repo)
+admin_resource(Post, Repo)
 
 Kemal::Session.config do |config|
   config.secret = "my super secret"
