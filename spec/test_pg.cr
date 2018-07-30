@@ -21,12 +21,36 @@ class User < Crecto::Model
     field :first_posted, Time
     field :last_posted, Time
   end
+
+  def self.collection_attributes
+    [:email, :status, :count, :score, :is_active, :first_posted, :last_posted, :updated_at, :created_at]
+  end
+
+  def self.form_attributes
+    [{:email, "string"},
+     {:encrypted_password, "password"},
+     {:status, "enum", ["Good", "Error"]},
+     {:count, "int"},
+     {:score, "float"},
+     {:is_active, "bool"},
+     {:first_posted, "time"},
+     {:last_posted, "time"}]
+  end
 end
 
 class Post < Crecto::Model
   schema "posts" do
     field :user_id, Int64
     field :content, String
+  end
+
+  def self.search_attributes
+    [:content]
+  end
+
+  def self.form_attributes
+    [{:user_id, "int"},
+     {:content, "text"}]
   end
 end
 

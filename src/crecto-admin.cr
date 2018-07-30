@@ -15,7 +15,7 @@ module CrectoAdmin
     repo: Repo.class,
     collection_attributes: Array(Symbol),
     show_page_attributes: Array(Symbol),
-    form_attributes: Array(Symbol))).new
+    form_attributes: Array(Tuple(Symbol, String) | Tuple(Symbol, String, Array(String))))).new
 
   def self.add_resource(resource)
     @@resources.push(resource)
