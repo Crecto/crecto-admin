@@ -25,9 +25,9 @@
         </div>
         <div class="navbar-menu is-active">
           <div class="navbar-end">
-            <% if CrectoAdmin.admin_signed_in?(ctx) && CrectoAdmin.config.auth %>
+            <% if CrectoAdmin.admin_signed_in?(ctx) && CrectoAdmin.config.auth_enabled %>
               <a class="navbar-item">
-                Signed in as <%= CrectoAdmin.current_user(ctx).to_query_hash[CrectoAdmin.config.auth_model_identifier.not_nil!] %>
+                Signed in as <%= CrectoAdmin.current_user(ctx) %>
               </a>
               <div class="navbar-item">
                 <div class="field is-grouped">
