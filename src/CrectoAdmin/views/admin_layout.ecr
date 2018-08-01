@@ -48,11 +48,11 @@
     </nav>
 
     <div id="main" class="container is-fluid">
-      <div class="columns">
+      <div class="columns" style="padding-left:5px;padding-right:5px">
         <% if CrectoAdmin.admin_signed_in?(ctx) %>
           <div class="column is-narrow">
             <aside class="menu left-siebar-nav">
-              <ul class="menu-list">
+              <ul class="menu-list has-text-weight-bold">
                 <% if CrectoAdmin.current_table(ctx) == "dashboard" %>
                   <li><a class="is-active" href="/admin/dashboard">Dashboard</a></li>
                 <% else %>
