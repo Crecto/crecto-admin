@@ -34,7 +34,7 @@
       <pre><%= item.pkey_value %></pre>
     </div>
   </div>
-  <% resource[:show_page_attributes].each do |attr| %>
+  <% resource[:model_attributes].each do |attr| %>
     <% next if attr == resource[:model].primary_key_field_symbol %>
     <div class="field">
       <label class="label"><%= attr %></label>

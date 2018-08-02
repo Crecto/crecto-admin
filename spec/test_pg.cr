@@ -55,7 +55,7 @@ class Post < Crecto::Model
 end
 
 CrectoAdmin.config do |c|
-  c.auth = CrectoAdmin::BasicAuth
+  c.auth = CrectoAdmin::DatabaseAuth
   c.basic_auth_credentials = {"a" => "b", "c" => "d"}
   c.auth_repo = Repo
   c.auth_model = User

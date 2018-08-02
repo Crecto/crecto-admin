@@ -17,8 +17,8 @@ module CrectoAdmin
 
   @@resources = Array(NamedTuple(model: Crecto::Model.class,
     repo: Repo.class,
+    model_attributes: Array(Symbol),
     collection_attributes: Array(Symbol),
-    show_page_attributes: Array(Symbol),
     form_attributes: Array(Tuple(Symbol, String) | Tuple(Symbol, String, Array(String))))).new
 
   def self.add_resource(resource)

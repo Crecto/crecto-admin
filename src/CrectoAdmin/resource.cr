@@ -1,6 +1,9 @@
 def self.admin_resource(model : Crecto::Model.class, repo, **opts)
-  collection_attributes = model.responds_to?(:collection_attributes) ? model.collection_attributes : model.fields.map { |f| f[:name] }
-  show_page_attributes = model.responds_to?(:show_page_attributes) ? model.show_page_attributes : model.fields.map { |f| f[:name] }
+  model_attributes = model.fields.map { |f| f[:name] }
+  model_attributes.delete(model.primary_key_field_symbol)
+  model_attributes.unshift(model.primary_key_field_symbol)
+
+  collection_attributes = model.responds_to?(:collection_attributes) ? model.collection_attributes : model_attributes
 
   form_attributes = [] of Tuple(Symbol, String) | Tuple(Symbol, String, Array(String))
   if model.responds_to?(:form_attributes)
@@ -26,13 +29,13 @@ def self.admin_resource(model : Crecto::Model.class, repo, **opts)
     end
   end
 
-  search_attributes = model.responds_to?(:search_attributes) ? model.search_attributes : model.fields.map { |f| f[:name] }
+  search_attributes = model.responds_to?(:search_attributes) ? model.search_attributes : model_attributes
   per_page = 20
   resource = {
     model:                 model,
     repo:                  repo,
+    model_attributes:      model_attributes,
     collection_attributes: collection_attributes,
-    show_page_attributes:  show_page_attributes,
     form_attributes:       form_attributes,
   }
 
