@@ -27,6 +27,9 @@ dependencies:
   kemal-flash:
     github: neovintage/kemal-flash
 
+  kemal-basic-auth:
+    github: kemalcr/kemal-basic-auth
+
 development_dependencies:
   mysql:
     github: crystal-lang/crystal-mysql

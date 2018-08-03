@@ -25,22 +25,24 @@
         </div>
         <div class="navbar-menu is-active">
           <div class="navbar-end">
-            <% if CrectoAdmin.admin_signed_in?(ctx) && CrectoAdmin.config.auth_enabled %>
+            <% if CrectoAdmin.config.auth_enabled && CrectoAdmin.admin_signed_in?(ctx) %>
               <a class="navbar-item">
                 Signed in as <%= CrectoAdmin.current_user(ctx) %>
               </a>
-              <div class="navbar-item">
-                <div class="field is-grouped">
-                  <p class="control">
-                    <a class="button" href="/admin/sign_out">
-                      <span class="icon">
-                        <i class="fas fa-sign-out-alt"></i>
-                      </span>
-                      <span>Sign Out</span>
-                    </a>
-                  </p>
+              <% if CrectoAdmin.config.auth != CrectoAdmin::BasicAuth %>
+                <div class="navbar-item">
+                  <div class="field is-grouped">
+                    <p class="control">
+                      <a class="button" href="/admin/sign_out">
+                        <span class="icon">
+                          <i class="fas fa-sign-out-alt"></i>
+                        </span>
+                        <span>Sign Out</span>
+                      </a>
+                    </p>
+                  </div>
                 </div>
-              </div>
+              <% end %>
             <% end %>
           </div>
         </div>

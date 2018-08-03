@@ -55,11 +55,19 @@ class Post < Crecto::Model
 end
 
 CrectoAdmin.config do |c|
+  c.auth = CrectoAdmin::BasicAuth
+  c.basic_auth_credentials = {"a" => "b", "c" => "d"}
   c.auth_repo = Repo
   c.auth_model = User
   c.auth_model_identifier = :email
   c.auth_model_password = :encrypted_password
+  c.custom_auth_method = ->(user_identifier : String, password : String) {
+    return "custom autherized user"
+  }
 end
+
+# init admin server
+init_admin()
 
 # add your models
 admin_resource(User, Repo)
