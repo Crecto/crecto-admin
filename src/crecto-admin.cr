@@ -96,6 +96,7 @@ module CrectoAdmin
     user = CrectoAdmin.current_user(ctx)
     attributes = [] of Symbol
     query = Crecto::Repo::Query.new
+    return {query, resource[:model_attributes]} unless CrectoAdmin.config.auth_enabled
     if resource[:model].responds_to? :can_access
       result = resource[:model].can_access(user)
       if result.is_a?(Bool)

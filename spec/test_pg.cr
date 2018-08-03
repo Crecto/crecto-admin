@@ -70,6 +70,7 @@ class Post < Crecto::Model
 end
 
 CrectoAdmin.config do |c|
+  c.auth_enabled = true
   c.auth = CrectoAdmin::DatabaseAuth
   c.basic_auth_credentials = {"a" => "b", "c" => "d"}
   c.auth_repo = Repo
