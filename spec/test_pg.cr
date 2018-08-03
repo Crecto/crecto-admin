@@ -38,7 +38,7 @@ class User < Crecto::Model
   end
 
   def self.can_access(user)
-    return true unless user.is_a? User
+    return false unless user.is_a? User
     user = user.as(User)
     return true if user.email.to_s == "jianghengle@gmail.com"
     query = Crecto::Repo::Query.where(id: user.id)
@@ -59,6 +59,13 @@ class Post < Crecto::Model
   def self.form_attributes
     [{:user_id, "int"},
      {:content, "text"}]
+  end
+
+  def self.can_access(user)
+    return false unless user.is_a? User
+    user = user.as(User)
+    return true if user.email.to_s == "jianghengle@gmail.com"
+    Crecto::Repo::Query.where(user_id: user.id)
   end
 end
 

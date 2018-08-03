@@ -43,10 +43,10 @@ def self.admin_resource(model : Crecto::Model.class, repo, **opts)
 
   # Index
   get "/admin/#{model.table_name}" do |ctx|
-    accessibility = CrectoAdmin.model_accessibility(ctx, resource)
-    next if accessibility[0].nil? || accessibility[1].empty?
-    model_query = accessibility[0].as(Crecto::Repo::Query)
-    collection_attributes = resource[:collection_attributes].select { |a| accessibility[1].includes? a }
+    access = CrectoAdmin.model_access(ctx, resource)
+    next if access[0].nil? || access[1].empty?
+    model_query = access[0].as(Crecto::Repo::Query)
+    collection_attributes = resource[:collection_attributes].select { |a| access[1].includes? a }
     offset = ctx.params.query["offset"]? ? ctx.params.query["offset"].to_i : 0
     query = model_query.limit(per_page).offset(offset)
     data = repo.all(model, query)
@@ -56,11 +56,11 @@ def self.admin_resource(model : Crecto::Model.class, repo, **opts)
 
   # Search
   get "/admin/#{model.table_name}/search" do |ctx|
-    accessibility = CrectoAdmin.model_accessibility(ctx, resource)
-    next if accessibility[0].nil? || accessibility[1].empty?
-    model_query = accessibility[0].as(Crecto::Repo::Query)
-    collection_attributes = resource[:collection_attributes].select { |a| accessibility[1].includes? a }
-    search_attributes = search_attributes.select { |a| accessibility[1].includes? a }
+    access = CrectoAdmin.model_access(ctx, resource)
+    next if access[0].nil? || access[1].empty?
+    model_query = access[0].as(Crecto::Repo::Query)
+    collection_attributes = resource[:collection_attributes].select { |a| access[1].includes? a }
+    search_attributes = search_attributes.select { |a| access[1].includes? a }
     search_attributes.delete(model.primary_key_field_symbol)
     search_attributes.unshift(model.primary_key_field_symbol)
     offset = ctx.params.query["offset"]? ? ctx.params.query["offset"].to_i : 0
@@ -83,14 +83,14 @@ def self.admin_resource(model : Crecto::Model.class, repo, **opts)
 
   # View
   get "/admin/#{model.table_name}/:id" do |ctx|
-    accessibility = CrectoAdmin.model_accessibility(ctx, resource)
-    next if accessibility[0].nil? || accessibility[1].empty?
-    model_query = accessibility[0].as(Crecto::Repo::Query)
+    access = CrectoAdmin.model_access(ctx, resource)
+    next if access[0].nil? || access[1].empty?
+    model_query = access[0].as(Crecto::Repo::Query)
     query = model_query.where(resource[:model].primary_key_field_symbol, ctx.params.url["id"])
     data = repo.all(model, query).not_nil!
     next if data.empty?
     item = data.first
-    model_attributes = accessibility[1]
+    model_attributes = access[1]
     ecr("show")
   end
 

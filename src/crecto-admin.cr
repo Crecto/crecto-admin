@@ -92,31 +92,31 @@ module CrectoAdmin
     end
   end
 
-  def self.model_accessibility(ctx, resource)
+  def self.model_access(ctx, resource)
     user = CrectoAdmin.current_user(ctx)
-    model = resource[:model]
     attributes = [] of Symbol
     query = Crecto::Repo::Query.new
-    return {query, resource[:model_attributes]} unless model.responds_to?(:can_access)
-    result = model.can_access(user)
-    if result.is_a?(Bool)
-      return {query, resource[:model_attributes]} if result.as(Bool)
-      return {nil, attributes}
-    elsif result.is_a?(Crecto::Repo::Query)
-      return {result.as(Crecto::Repo::Query), resource[:model_attributes]}
-    elsif result.is_a?(Array(Symbol))
-      return {query, result.as(Array(Symbol))}
-    elsif result.is_a?(Tuple(Crecto::Repo::Query, Array(Symbol)))
-      return result.as(Tuple(Crecto::Repo::Query, Array(Symbol)))
+    if resource[:model].responds_to? :can_access
+      result = resource[:model].can_access(user)
+      if result.is_a?(Bool)
+        return {query, resource[:model_attributes]} if result.as(Bool)
+        return {nil, attributes}
+      elsif result.is_a?(Crecto::Repo::Query)
+        return {result.as(Crecto::Repo::Query), resource[:model_attributes]}
+      elsif result.is_a?(Array(Symbol))
+        return {query, result.as(Array(Symbol))}
+      elsif result.is_a?(Tuple(Crecto::Repo::Query, Array(Symbol)))
+        return result.as(Tuple(Crecto::Repo::Query, Array(Symbol)))
+      end
     end
     return {query, resource[:model_attributes]}
   end
 
   def self.accessible_resources(ctx)
     @@resources.select do |resource|
-      accessibility = CrectoAdmin.model_accessibility(ctx, resource)
-      query = accessibility[0]
-      attributes = accessibility[1]
+      access = CrectoAdmin.model_access(ctx, resource)
+      query = access[0]
+      attributes = access[1]
       !query.nil? && !attributes.empty?
     end
   end
@@ -141,10 +141,10 @@ def self.init_admin
   get "/admin/dashboard" do |ctx|
     counts = [] of Int64
     CrectoAdmin.resources.each do |resource|
-      accessibility = CrectoAdmin.model_accessibility(ctx, resource)
-      next if accessibility[0].nil?
-      next if accessibility[1].empty?
-      query = accessibility[0].as(Crecto::Repo::Query)
+      access = CrectoAdmin.model_access(ctx, resource)
+      next if access[0].nil?
+      next if access[1].empty?
+      query = access[0].as(Crecto::Repo::Query)
       counts << resource[:repo].aggregate(resource[:model], :count, resource[:model].primary_key_field_symbol, query).as(Int64)
     end
     ecr "dashboard"
