@@ -22,6 +22,12 @@ class User < Crecto::Model
     field :last_posted, Time
   end
 
+  def can_edit(user)
+    return false unless user.is_a? User
+    return true if user.email.to_s == "jianghengle@gmail.com"
+    return [{:email, "fixed"}, :encrypted_password]
+  end
+
   def self.collection_attributes
     [:email, :status, :count, :score, :is_active, :first_posted, :last_posted, :updated_at, :created_at]
   end
@@ -39,7 +45,6 @@ class User < Crecto::Model
 
   def self.can_access(user)
     return false unless user.is_a? User
-    user = user.as(User)
     return true if user.email.to_s == "jianghengle@gmail.com"
     query = Crecto::Repo::Query.where(id: user.id)
     return {query, [:email, :encrypted_password, :status]}
@@ -50,6 +55,12 @@ class Post < Crecto::Model
   schema "posts" do
     field :user_id, Int64
     field :content, String
+  end
+
+  def can_edit(user)
+    return false unless user.is_a? User
+    return true if user.email.to_s == "jianghengle@gmail.com"
+    return [:content]
   end
 
   def self.search_attributes
@@ -63,7 +74,6 @@ class Post < Crecto::Model
 
   def self.can_access(user)
     return false unless user.is_a? User
-    user = user.as(User)
     return true if user.email.to_s == "jianghengle@gmail.com"
     Crecto::Repo::Query.where(user_id: user.id)
   end

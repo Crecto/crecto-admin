@@ -96,6 +96,7 @@ module CrectoAdmin
     user = CrectoAdmin.current_user(ctx)
     attributes = [] of Symbol
     query = Crecto::Repo::Query.new
+    return {query, resource[:model_attributes]}
     return {query, resource[:model_attributes]} unless CrectoAdmin.config.auth_enabled
     if resource[:model].responds_to? :can_access
       result = resource[:model].can_access(user)
@@ -120,6 +121,70 @@ module CrectoAdmin
       attributes = access[1]
       !query.nil? && !attributes.empty?
     end
+  end
+
+  def self.model_create(ctx, resource, accessible)
+    user = CrectoAdmin.current_user(ctx)
+    empty = [] of Symbol | Tuple(Symbol, String) | Tuple(Symbol, String, Array(String) | String)
+    if CrectoAdmin.config.auth_enabled
+      if false
+        result = true
+        if result.is_a?(Bool)
+          return empty unless result
+        else
+          form_base = CrectoAdmin.filter_form_attributes(result, accessible)
+          return CrectoAdmin.merge_form_attributes(form_base, resource[:form_attributes])
+        end
+      end
+    end
+    CrectoAdmin.filter_form_attributes(resource[:form_attributes], accessible)
+  end
+
+  def self.item_edit(ctx, resource, item, accessible)
+    user = CrectoAdmin.current_user(ctx)
+    empty = [] of Symbol | Tuple(Symbol, String) | Tuple(Symbol, String, Array(String) | String)
+    if CrectoAdmin.config.auth_enabled && item.responds_to? :can_edit
+      result = item.can_edit(user)
+      if result.is_a? Bool
+        return empty unless result
+      else
+        form_base = CrectoAdmin.filter_form_attributes(result, accessible)
+        return CrectoAdmin.merge_form_attributes(form_base, resource[:form_attributes])
+      end
+    end
+    CrectoAdmin.filter_form_attributes(resource[:form_attributes], accessible)
+  end
+
+  def self.filter_form_attributes(form_attributes, attributes)
+    form_attributes.select do |attr|
+      puts attr
+      if attr.is_a? Symbol
+        next attributes.includes? attr
+      elsif attr.is_a? Tuple(Symbol, String) | Tuple(Symbol, String, Array(String) | String)
+        next attributes.includes? attr[0]
+      end
+      false
+    end
+  end
+
+  def self.merge_form_attributes(form_base, form_reference)
+    result = [] of Symbol | Tuple(Symbol, String) | Tuple(Symbol, String, Array(String) | String)
+    h = {} of Symbol => (Symbol | Tuple(Symbol, String) | Tuple(Symbol, String, Array(String) | String))
+    form_reference.each do |attr|
+      if attr.is_a? Symbol
+        h[attr] = attr
+      elsif attr.is_a? Tuple(Symbol, String) | Tuple(Symbol, String, Array(String) | String)
+        h[attr[0]] = attr
+      end
+    end
+    form_base.each do |attr_base|
+      if attr_base.is_a? Symbol
+        result << h[attr_base] if h.has_key? attr_base
+      elsif attr_base.is_a? Tuple(Symbol, String) | Tuple(Symbol, String, Array(String) | String)
+        result << attr_base if h.has_key? attr_base[0]
+      end
+    end
+    return result
   end
 end
 

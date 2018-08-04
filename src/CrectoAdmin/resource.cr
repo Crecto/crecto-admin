@@ -77,7 +77,10 @@ def self.admin_resource(model : Crecto::Model.class, repo, **opts)
 
   # New form
   get "/admin/#{model.table_name}/new" do |ctx|
+    access = CrectoAdmin.model_access(ctx, resource)
+    next if access[0].nil? || access[1].empty?
     item = model.new
+    form_attributes = CrectoAdmin.model_create(ctx, resource, access[1])
     ecr("new")
   end
 
@@ -91,14 +94,18 @@ def self.admin_resource(model : Crecto::Model.class, repo, **opts)
     next if data.empty?
     item = data.first
     model_attributes = access[1]
+    form_attributes = CrectoAdmin.item_edit(ctx, resource, item, access[1])
     ecr("show")
   end
 
   # Update
   put "/admin/#{model.table_name}/:pid_id" do |ctx|
+    access = CrectoAdmin.model_access(ctx, resource)
+    next if access[0].nil? || access[1].empty?
     item = repo.get!(model, ctx.params.url["pid_id"])
+    form_attributes = CrectoAdmin.item_edit(ctx, resource, item, access[1])
     query_hash = ctx.params.body.to_h
-    resource[:form_attributes].each do |attr|
+    form_attributes.each do |attr|
       next if attr.is_a? Symbol
       attr = attr.as(Tuple(Symbol, String) | Tuple(Symbol, String, Array(String) | String))
       if attr[1] == "bool"
@@ -127,13 +134,19 @@ def self.admin_resource(model : Crecto::Model.class, repo, **opts)
 
   # Edit form
   get "/admin/#{model.table_name}/:id/edit" do |ctx|
-    item = repo.get!(model, ctx.params.url["id"])
+    access = CrectoAdmin.model_access(ctx, resource)
+    next if access[0].nil? || access[1].empty?
+    model_query = access[0].as(Crecto::Repo::Query)
+    query = model_query.where(resource[:model].primary_key_field_symbol, ctx.params.url["id"])
+    data = repo.all(model, query).not_nil!
+    next if data.empty?
+    item = data.first
+    form_attributes = CrectoAdmin.item_edit(ctx, resource, item, access[1])
     ecr("edit")
   end
 
   # Create
   post "/admin/#{model.table_name}" do |ctx|
-    puts "create"
     item = model.new
     query_hash = ctx.params.body.to_h
     resource[:form_attributes].each do |attr|
