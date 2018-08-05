@@ -11,19 +11,23 @@
 </div>
 
 <div class="field is-grouped">
-  <p class="control">
-    <a class="button is-info" href="/admin/<%= item.class.table_name %>/<%= item.pkey_value %>/edit">
-      <span class="icon"><i class="fas fa-edit"></i></span>
-      <span>Edit</span>
-    </a>
-  </p>
-  <p class="control">
-    <a class="button is-danger" href="/admin/<%= item.class.table_name %>/<%= item.pkey_value %>/delete"
-      onclick="return confirm('Are you sure to delete this record from the database?')">
-      <span class="icon"><i class="fas fa-trash"></i></span>
-      <span>Delete</span>
-    </a>
-  </p>
+  <% unless form_attributes.empty? %>
+    <p class="control">
+      <a class="button is-info" href="/admin/<%= item.class.table_name %>/<%= item.pkey_value %>/edit">
+        <span class="icon"><i class="fas fa-edit"></i></span>
+        <span>Edit</span>
+      </a>
+    </p>
+  <% end %>
+  <% if can_delete %>
+    <p class="control">
+      <a class="button is-danger" href="/admin/<%= item.class.table_name %>/<%= item.pkey_value %>/delete"
+        onclick="return confirm('Are you sure to delete this record from the database?')">
+        <span class="icon"><i class="fas fa-trash"></i></span>
+        <span>Delete</span>
+      </a>
+    </p>
+  <% end %>
 </div>
 
 <div>

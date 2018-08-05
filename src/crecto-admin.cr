@@ -7,6 +7,14 @@ require "kemal-basic-auth"
 require "crypto/bcrypt/password"
 require "./CrectoAdmin/*"
 
+def Crecto::Model.can_access(user)
+  true
+end
+
+def Crecto::Model.can_create(user)
+  true
+end
+
 module CrectoAdmin
   DatabaseAuth = "DatabaseAuth"
   BasicAuth    = "BasicAuth"
@@ -92,11 +100,9 @@ module CrectoAdmin
     end
   end
 
-  def self.model_access(ctx, resource)
-    user = CrectoAdmin.current_user(ctx)
+  def self.check_access(user, resource)
     attributes = [] of Symbol
     query = Crecto::Repo::Query.new
-    return {query, resource[:model_attributes]}
     return {query, resource[:model_attributes]} unless CrectoAdmin.config.auth_enabled
     if resource[:model].responds_to? :can_access
       result = resource[:model].can_access(user)
@@ -115,20 +121,20 @@ module CrectoAdmin
   end
 
   def self.accessible_resources(ctx)
+    user = CrectoAdmin.current_user(ctx)
     @@resources.select do |resource|
-      access = CrectoAdmin.model_access(ctx, resource)
+      access = CrectoAdmin.check_access(user, resource)
       query = access[0]
       attributes = access[1]
       !query.nil? && !attributes.empty?
     end
   end
 
-  def self.model_create(ctx, resource, accessible)
-    user = CrectoAdmin.current_user(ctx)
+  def self.check_create(user, resource, accessible)
     empty = [] of Symbol | Tuple(Symbol, String) | Tuple(Symbol, String, Array(String) | String)
     if CrectoAdmin.config.auth_enabled
-      if false
-        result = true
+      if resource[:model].responds_to? :can_create
+        result = resource[:model].can_create(user)
         if result.is_a?(Bool)
           return empty unless result
         else
@@ -140,8 +146,7 @@ module CrectoAdmin
     CrectoAdmin.filter_form_attributes(resource[:form_attributes], accessible)
   end
 
-  def self.item_edit(ctx, resource, item, accessible)
-    user = CrectoAdmin.current_user(ctx)
+  def self.check_edit(user, resource, item, accessible)
     empty = [] of Symbol | Tuple(Symbol, String) | Tuple(Symbol, String, Array(String) | String)
     if CrectoAdmin.config.auth_enabled && item.responds_to? :can_edit
       result = item.can_edit(user)
@@ -157,7 +162,6 @@ module CrectoAdmin
 
   def self.filter_form_attributes(form_attributes, attributes)
     form_attributes.select do |attr|
-      puts attr
       if attr.is_a? Symbol
         next attributes.includes? attr
       elsif attr.is_a? Tuple(Symbol, String) | Tuple(Symbol, String, Array(String) | String)
@@ -186,6 +190,17 @@ module CrectoAdmin
     end
     return result
   end
+
+  def self.check_delete(user, resource, item, editable)
+    return true unless CrectoAdmin.config.auth_enabled
+    if item.responds_to? :can_delete
+      result = item.can_delete(user)
+      if result.is_a? Bool
+        return result
+      end
+    end
+    !editable.empty?
+  end
 end
 
 def self.init_admin
@@ -206,8 +221,9 @@ def self.init_admin
 
   get "/admin/dashboard" do |ctx|
     counts = [] of Int64
+    user = CrectoAdmin.current_user(ctx)
     CrectoAdmin.resources.each do |resource|
-      access = CrectoAdmin.model_access(ctx, resource)
+      access = CrectoAdmin.check_access(user, resource)
       next if access[0].nil?
       next if access[1].empty?
       query = access[0].as(Crecto::Repo::Query)
