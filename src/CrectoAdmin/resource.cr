@@ -1,8 +1,11 @@
 def self.admin_resource(model : Crecto::Model.class, repo, **opts)
-  collection_attributes = model.responds_to?(:collection_attributes) ? model.collection_attributes : model.fields.map { |f| f[:name] }
-  show_page_attributes = model.responds_to?(:show_page_attributes) ? model.show_page_attributes : model.fields.map { |f| f[:name] }
+  model_attributes = model.fields.map { |f| f[:name] }
+  model_attributes.delete(model.primary_key_field_symbol)
+  model_attributes.unshift(model.primary_key_field_symbol)
 
-  form_attributes = [] of Tuple(Symbol, String) | Tuple(Symbol, String, Array(String))
+  collection_attributes = model.responds_to?(:collection_attributes) ? model.collection_attributes : model_attributes
+
+  form_attributes = [] of Symbol | Tuple(Symbol, String) | Tuple(Symbol, String, Array(String) | String)
   if model.responds_to?(:form_attributes)
     form_attributes.concat(model.form_attributes)
   else
@@ -20,19 +23,19 @@ def self.admin_resource(model : Crecto::Model.class, repo, **opts)
         elsif attr_type == "Time"
           form_attributes << {f[:name], "time"}
         else
-          form_attributes << {f[:name], "default"}
+          form_attributes << f[:name]
         end
       end
     end
   end
 
-  search_attributes = model.responds_to?(:search_attributes) ? model.search_attributes : model.fields.map { |f| f[:name] }
+  search_attributes = model.responds_to?(:search_attributes) ? model.search_attributes : model_attributes
   per_page = 20
   resource = {
     model:                 model,
     repo:                  repo,
+    model_attributes:      model_attributes,
     collection_attributes: collection_attributes,
-    show_page_attributes:  show_page_attributes,
     form_attributes:       form_attributes,
   }
 
@@ -40,24 +43,35 @@ def self.admin_resource(model : Crecto::Model.class, repo, **opts)
 
   # Index
   get "/admin/#{model.table_name}" do |ctx|
+    access = CrectoAdmin.model_access(ctx, resource)
+    next if access[0].nil? || access[1].empty?
+    model_query = access[0].as(Crecto::Repo::Query)
+    collection_attributes = resource[:collection_attributes].select { |a| access[1].includes? a }
     offset = ctx.params.query["offset"]? ? ctx.params.query["offset"].to_i : 0
-    query = Crecto::Repo::Query.limit(per_page).offset(offset)
+    query = model_query.limit(per_page).offset(offset)
     data = repo.all(model, query)
-    count = repo.aggregate(model, :count, resource[:model].primary_key_field_symbol).as(Int64)
+    count = repo.aggregate(model, :count, resource[:model].primary_key_field_symbol, model_query).as(Int64)
     ecr("index")
   end
 
   # Search
   get "/admin/#{model.table_name}/search" do |ctx|
+    access = CrectoAdmin.model_access(ctx, resource)
+    next if access[0].nil? || access[1].empty?
+    model_query = access[0].as(Crecto::Repo::Query)
+    collection_attributes = resource[:collection_attributes].select { |a| access[1].includes? a }
+    search_attributes = search_attributes.select { |a| access[1].includes? a }
+    search_attributes.delete(model.primary_key_field_symbol)
+    search_attributes.unshift(model.primary_key_field_symbol)
     offset = ctx.params.query["offset"]? ? ctx.params.query["offset"].to_i : 0
     search_string = search_attributes.map { |sa| "#{CrectoAdmin.field_cast(sa, repo)} LIKE ?" }.join(" OR ")
     search_params = (1..search_attributes.size).map { |x| "%#{CrectoAdmin.search_param(ctx)}%" }
-    query = Crecto::Repo::Query
+    query = model_query
       .limit(per_page)
       .where(search_string, search_params)
       .offset(offset)
     data = repo.all(model, query)
-    count = repo.aggregate(model, :count, resource[:model].primary_key_field_symbol, Crecto::Repo::Query.where(search_string, search_params)).as(Int64)
+    count = repo.aggregate(model, :count, resource[:model].primary_key_field_symbol, model_query).as(Int64)
     ecr("index")
   end
 
@@ -69,7 +83,14 @@ def self.admin_resource(model : Crecto::Model.class, repo, **opts)
 
   # View
   get "/admin/#{model.table_name}/:id" do |ctx|
-    item = repo.get!(model, ctx.params.url["id"])
+    access = CrectoAdmin.model_access(ctx, resource)
+    next if access[0].nil? || access[1].empty?
+    model_query = access[0].as(Crecto::Repo::Query)
+    query = model_query.where(resource[:model].primary_key_field_symbol, ctx.params.url["id"])
+    data = repo.all(model, query).not_nil!
+    next if data.empty?
+    item = data.first
+    model_attributes = access[1]
     ecr("show")
   end
 
@@ -78,6 +99,8 @@ def self.admin_resource(model : Crecto::Model.class, repo, **opts)
     item = repo.get!(model, ctx.params.url["pid_id"])
     query_hash = ctx.params.body.to_h
     resource[:form_attributes].each do |attr|
+      next if attr.is_a? Symbol
+      attr = attr.as(Tuple(Symbol, String) | Tuple(Symbol, String, Array(String) | String))
       if attr[1] == "bool"
         query_hash[attr[0].to_s] = query_hash[attr[0].to_s]? == "on" ? "true" : "false"
       elsif attr[1] == "password"
@@ -114,6 +137,8 @@ def self.admin_resource(model : Crecto::Model.class, repo, **opts)
     item = model.new
     query_hash = ctx.params.body.to_h
     resource[:form_attributes].each do |attr|
+      next if attr.is_a? Symbol
+      attr = attr.as(Tuple(Symbol, String) | Tuple(Symbol, String, Array(String) | String))
       if attr[1] == "bool"
         query_hash[attr[0].to_s] = query_hash[attr[0].to_s]? == "on" ? "true" : "false"
       elsif attr[1] == "password"

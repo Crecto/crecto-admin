@@ -27,14 +27,22 @@ class User < Crecto::Model
   end
 
   def self.form_attributes
-    [{:email, "string"},
+    [:email,
      {:encrypted_password, "password"},
      {:status, "enum", ["Good", "Error"]},
      {:count, "int"},
-     {:score, "float"},
+     {:score, "fixed", "100.5"},
      {:is_active, "bool"},
      {:first_posted, "time"},
      {:last_posted, "time"}]
+  end
+
+  def self.can_access(user)
+    return false unless user.is_a? User
+    user = user.as(User)
+    return true if user.email.to_s == "jianghengle@gmail.com"
+    query = Crecto::Repo::Query.where(id: user.id)
+    return {query, [:email, :encrypted_password, :status]}
   end
 end
 
@@ -45,17 +53,25 @@ class Post < Crecto::Model
   end
 
   def self.search_attributes
-    [:content]
+    [:user_id, :content]
   end
 
   def self.form_attributes
     [{:user_id, "int"},
      {:content, "text"}]
   end
+
+  def self.can_access(user)
+    return false unless user.is_a? User
+    user = user.as(User)
+    return true if user.email.to_s == "jianghengle@gmail.com"
+    Crecto::Repo::Query.where(user_id: user.id)
+  end
 end
 
 CrectoAdmin.config do |c|
-  c.auth = CrectoAdmin::BasicAuth
+  c.auth_enabled = true
+  c.auth = CrectoAdmin::DatabaseAuth
   c.basic_auth_credentials = {"a" => "b", "c" => "d"}
   c.auth_repo = Repo
   c.auth_model = User
