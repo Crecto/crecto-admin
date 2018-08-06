@@ -2,8 +2,35 @@
   margin-top: 15px;
 }
 
+#main .main-container {
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+
 #main .left-siebar-nav {
   width: 240px;
+}
+
+#content {
+  position: relative;
+}
+
+.dashboard-table {
+  margin-top: 10px;
+}
+
+.no-margin-bottom {
+  margin-bottom: 0px!important;
+}
+
+.text-inline {
+  line-height: 2.3;
+}
+
+.item-table-div {
+  display: inline-grid;
+  width: 100%;
 }
 
 .item-table-container {

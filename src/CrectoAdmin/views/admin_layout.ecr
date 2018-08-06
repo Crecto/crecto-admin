@@ -50,7 +50,7 @@
     </nav>
 
     <div id="main" class="container is-fluid">
-      <div class="columns" style="padding-left:5px;padding-right:5px">
+      <div class="columns main-container">
         <% if CrectoAdmin.admin_signed_in?(ctx) %>
           <div class="column is-narrow">
             <aside class="menu left-siebar-nav">
@@ -78,7 +78,7 @@
           </div>
         <% end %>
         <div class="column">
-          <section id="content" style="position:relative;">
+          <section id="content">
             <%= ecr "_flash_messages" %>
             <%= content %>
           </section>
