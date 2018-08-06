@@ -7,6 +7,14 @@ require "kemal-basic-auth"
 require "crypto/bcrypt/password"
 require "./CrectoAdmin/*"
 
+def Crecto::Model.can_access(user)
+  true
+end
+
+def Crecto::Model.can_create(user)
+  true
+end
+
 module CrectoAdmin
   DatabaseAuth = "DatabaseAuth"
   BasicAuth    = "BasicAuth"
@@ -92,8 +100,7 @@ module CrectoAdmin
     end
   end
 
-  def self.model_access(ctx, resource)
-    user = CrectoAdmin.current_user(ctx)
+  def self.check_access(user, resource)
     attributes = [] of Symbol
     query = Crecto::Repo::Query.new
     return {query, resource[:model_attributes]} unless CrectoAdmin.config.auth_enabled
@@ -114,12 +121,85 @@ module CrectoAdmin
   end
 
   def self.accessible_resources(ctx)
+    user = CrectoAdmin.current_user(ctx)
     @@resources.select do |resource|
-      access = CrectoAdmin.model_access(ctx, resource)
+      access = CrectoAdmin.check_access(user, resource)
       query = access[0]
       attributes = access[1]
       !query.nil? && !attributes.empty?
     end
+  end
+
+  def self.check_create(user, resource, accessible)
+    empty = [] of Symbol | Tuple(Symbol, String) | Tuple(Symbol, String, Array(String) | String)
+    if CrectoAdmin.config.auth_enabled
+      if resource[:model].responds_to? :can_create
+        result = resource[:model].can_create(user)
+        if result.is_a?(Bool)
+          return empty unless result
+        else
+          form_base = CrectoAdmin.filter_form_attributes(result, accessible)
+          return CrectoAdmin.merge_form_attributes(form_base, resource[:form_attributes])
+        end
+      end
+    end
+    CrectoAdmin.filter_form_attributes(resource[:form_attributes], accessible)
+  end
+
+  def self.check_edit(user, resource, item, accessible)
+    empty = [] of Symbol | Tuple(Symbol, String) | Tuple(Symbol, String, Array(String) | String)
+    if CrectoAdmin.config.auth_enabled && item.responds_to? :can_edit
+      result = item.can_edit(user)
+      if result.is_a? Bool
+        return empty unless result
+      else
+        form_base = CrectoAdmin.filter_form_attributes(result, accessible)
+        return CrectoAdmin.merge_form_attributes(form_base, resource[:form_attributes])
+      end
+    end
+    CrectoAdmin.filter_form_attributes(resource[:form_attributes], accessible)
+  end
+
+  def self.filter_form_attributes(form_attributes, attributes)
+    form_attributes.select do |attr|
+      if attr.is_a? Symbol
+        next attributes.includes? attr
+      elsif attr.is_a? Tuple(Symbol, String) | Tuple(Symbol, String, Array(String) | String)
+        next attributes.includes? attr[0]
+      end
+      false
+    end
+  end
+
+  def self.merge_form_attributes(form_base, form_reference)
+    result = [] of Symbol | Tuple(Symbol, String) | Tuple(Symbol, String, Array(String) | String)
+    h = {} of Symbol => (Symbol | Tuple(Symbol, String) | Tuple(Symbol, String, Array(String) | String))
+    form_reference.each do |attr|
+      if attr.is_a? Symbol
+        h[attr] = attr
+      elsif attr.is_a? Tuple(Symbol, String) | Tuple(Symbol, String, Array(String) | String)
+        h[attr[0]] = attr
+      end
+    end
+    form_base.each do |attr_base|
+      if attr_base.is_a? Symbol
+        result << h[attr_base] if h.has_key? attr_base
+      elsif attr_base.is_a? Tuple(Symbol, String) | Tuple(Symbol, String, Array(String) | String)
+        result << attr_base if h.has_key? attr_base[0]
+      end
+    end
+    return result
+  end
+
+  def self.check_delete(user, resource, item, editable)
+    return true unless CrectoAdmin.config.auth_enabled
+    if item.responds_to? :can_delete
+      result = item.can_delete(user)
+      if result.is_a? Bool
+        return result
+      end
+    end
+    !editable.empty?
   end
 end
 
@@ -141,8 +221,9 @@ def self.init_admin
 
   get "/admin/dashboard" do |ctx|
     counts = [] of Int64
+    user = CrectoAdmin.current_user(ctx)
     CrectoAdmin.resources.each do |resource|
-      access = CrectoAdmin.model_access(ctx, resource)
+      access = CrectoAdmin.check_access(user, resource)
       next if access[0].nil?
       next if access[1].empty?
       query = access[0].as(Crecto::Repo::Query)

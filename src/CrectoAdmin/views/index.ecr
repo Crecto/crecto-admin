@@ -7,12 +7,14 @@
     <span class="is-size-6" style="line-height:2.3;">
       Total rows: <%= count %>
     </span>&nbsp;&nbsp;
-    <a class="button" href="/admin/<%= resource[:model].table_name %>/new">
-      <span class="icon">
-        <i class="fas fa-plus"></i>
-      </span>
-      <span>New</span>
-    </a>
+    <% unless form_attributes.empty? %>
+      <a class="button" href="/admin/<%= resource[:model].table_name %>/new">
+        <span class="icon">
+          <i class="fas fa-plus"></i>
+        </span>
+        <span>New</span>
+      </a>
+    <% end %>
   </div>
   <div class="column">
     <form method="GET" action="/admin/<%= resource[:model].table_name %>/search">
