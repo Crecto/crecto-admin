@@ -10,12 +10,14 @@ module CrectoAdmin
     property auth_model_password : Symbol?
     property basic_auth_credentials : Hash(String, String)?
     property custom_auth_method : Proc(String, String, String)?
+    property items_per_page : Int32
 
     def initialize
-      @auth_enabled = true
+      @auth_enabled = false
       @auth = CrectoAdmin::DatabaseAuth
       @auth_model_identifier = :email
       @auth_model_password = :encrypted_password
+      @items_per_page = 20
     end
   end
 

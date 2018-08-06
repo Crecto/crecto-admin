@@ -30,7 +30,7 @@ def self.admin_resource(model : Crecto::Model.class, repo, **opts)
   end
 
   search_attributes = model.responds_to?(:search_attributes) ? model.search_attributes : model_attributes
-  per_page = 20
+
   resource = {
     model:                 model,
     repo:                  repo,
@@ -46,12 +46,13 @@ def self.admin_resource(model : Crecto::Model.class, repo, **opts)
     user = CrectoAdmin.current_user(ctx)
     access = CrectoAdmin.check_access(user, resource)
     next if access[0].nil? || access[1].empty?
-    model_query = access[0].as(Crecto::Repo::Query)
+    query = access[0].as(Crecto::Repo::Query)
     collection_attributes = resource[:collection_attributes].select { |a| access[1].includes? a }
     offset = ctx.params.query["offset"]? ? ctx.params.query["offset"].to_i : 0
-    query = model_query.limit(per_page).offset(offset)
+    per_page = CrectoAdmin.config.items_per_page
+    count = repo.aggregate(model, :count, resource[:model].primary_key_field_symbol, query).as(Int64)
+    query = query.limit(per_page).offset(offset)
     data = repo.all(model, query)
-    count = repo.aggregate(model, :count, resource[:model].primary_key_field_symbol, model_query).as(Int64)
     form_attributes = CrectoAdmin.check_create(user, resource, access[1])
     ecr("index")
   end
@@ -61,7 +62,7 @@ def self.admin_resource(model : Crecto::Model.class, repo, **opts)
     user = CrectoAdmin.current_user(ctx)
     access = CrectoAdmin.check_access(user, resource)
     next if access[0].nil? || access[1].empty?
-    model_query = access[0].as(Crecto::Repo::Query)
+    query = access[0].as(Crecto::Repo::Query)
     collection_attributes = resource[:collection_attributes].select { |a| access[1].includes? a }
     search_attributes = search_attributes.select { |a| access[1].includes? a }
     search_attributes.delete(model.primary_key_field_symbol)
@@ -69,12 +70,11 @@ def self.admin_resource(model : Crecto::Model.class, repo, **opts)
     offset = ctx.params.query["offset"]? ? ctx.params.query["offset"].to_i : 0
     search_string = "(" + search_attributes.map { |sa| "#{CrectoAdmin.field_cast(sa, repo)} LIKE ?" }.join(" OR ") + ")"
     search_params = (1..search_attributes.size).map { |x| "%#{CrectoAdmin.search_param(ctx)}%" }
-    query = model_query
-      .limit(per_page)
-      .where(search_string, search_params)
-      .offset(offset)
+    per_page = CrectoAdmin.config.items_per_page
+    query = query.where(search_string, search_params)
+    count = repo.aggregate(model, :count, resource[:model].primary_key_field_symbol, query).as(Int64)
+    query = query.limit(per_page).offset(offset)
     data = repo.all(model, query)
-    count = repo.aggregate(model, :count, resource[:model].primary_key_field_symbol, model_query.where(search_string, search_params)).as(Int64)
     form_attributes = CrectoAdmin.check_create(user, resource, access[1])
     ecr("index")
   end
@@ -94,8 +94,8 @@ def self.admin_resource(model : Crecto::Model.class, repo, **opts)
     user = CrectoAdmin.current_user(ctx)
     access = CrectoAdmin.check_access(user, resource)
     next if access[0].nil? || access[1].empty?
-    model_query = access[0].as(Crecto::Repo::Query)
-    query = model_query.where(resource[:model].primary_key_field_symbol, ctx.params.url["id"])
+    query = access[0].as(Crecto::Repo::Query)
+    query = query.where(resource[:model].primary_key_field_symbol, ctx.params.url["id"])
     data = repo.all(model, query).not_nil!
     next if data.empty?
     item = data.first
@@ -145,8 +145,8 @@ def self.admin_resource(model : Crecto::Model.class, repo, **opts)
     user = CrectoAdmin.current_user(ctx)
     access = CrectoAdmin.check_access(user, resource)
     next if access[0].nil? || access[1].empty?
-    model_query = access[0].as(Crecto::Repo::Query)
-    query = model_query.where(resource[:model].primary_key_field_symbol, ctx.params.url["id"])
+    query = access[0].as(Crecto::Repo::Query)
+    query = query.where(resource[:model].primary_key_field_symbol, ctx.params.url["id"])
     data = repo.all(model, query).not_nil!
     next if data.empty?
     item = data.first
