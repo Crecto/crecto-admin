@@ -11,6 +11,8 @@ module CrectoAdmin
     property basic_auth_credentials : Hash(String, String)?
     property custom_auth_method : Proc(String, String, String)?
     property items_per_page : Int32
+    property app_name : String
+    property app_logo : String
 
     def initialize
       @auth_enabled = false
@@ -18,6 +20,8 @@ module CrectoAdmin
       @auth_model_identifier = :email
       @auth_model_password = :encrypted_password
       @items_per_page = 20
+      @app_name = "Crecto Admin"
+      @app_logo = "/crecto.png"
     end
   end
 
