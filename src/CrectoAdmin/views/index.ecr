@@ -2,9 +2,9 @@
   <%= resource[:model].table_name.split('_').map(&.capitalize).join(' ') %>
 </div>
 
-<div class="columns" style="margin-bottom:0px;">
+<div class="columns no-margin-bottom">
   <div class="column">
-    <span class="is-size-6" style="line-height:2.3;">
+    <span class="is-size-6 text-inline">
       Total rows: <%= count %>
     </span>&nbsp;&nbsp;
     <% unless form_attributes.empty? %>
@@ -30,7 +30,7 @@
   </div>
 </div>
 
-<div style="display:inline-grid;width:100%;">
+<div class="item-table-div">
   <div class="item-table-container">
     <table class="table is-fullwidth is-hoverable is-striped">
       <thead>
