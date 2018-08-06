@@ -60,3 +60,7 @@
   padding: 10px;
   z-index: 10;
 }
+
+.admin-logo {
+  max-height: 40px!important;
+}
