@@ -27,7 +27,7 @@
           <div class="navbar-end">
             <% if CrectoAdmin.config.auth_enabled && CrectoAdmin.admin_signed_in?(ctx) %>
               <a class="navbar-item">
-                Signed in as <%= CrectoAdmin.current_user(ctx) %>
+                Signed in as <%= CrectoAdmin.current_user_label(ctx) %>
               </a>
               <% if CrectoAdmin.config.auth != CrectoAdmin::BasicAuth %>
                 <div class="navbar-item">
@@ -60,7 +60,7 @@
                 <% else %>
                   <li><a href="/admin/dashboard">Dashboard</a></li>
                 <% end %>
-                <% CrectoAdmin.resources.each do |resource| %>
+                <% CrectoAdmin.accessible_resources(ctx).each do |resource| %>
                   <li>
                     <% if CrectoAdmin.current_table(ctx) == resource[:model].table_name %>
                       <a class="is-active" href="/admin/<%= resource[:model].table_name %>">

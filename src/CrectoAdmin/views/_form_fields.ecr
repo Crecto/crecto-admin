@@ -1,74 +1,99 @@
 <% resource[:form_attributes].each do |attr| %>
-  <% attr_name = attr[0] %>
-  <% attr_type = attr[1] %>
-  <% next if attr_name == item.class.primary_key_field_symbol %>
-  <% next if attr_name.to_s == item.class.updated_at_field %>
-  <% next if attr_name.to_s == item.class.created_at_field %>
   <% query_hash = item.to_query_hash %>
-  <div class="field">
-    <% if attr_type == "bool" %>
-      <div class="control">
-        <label class="checkbox">
-          <input placeholder="<%= attr_name %>" name="<%= attr_name %>" id="<%= attr_name %>" type="checkbox" <% if query_hash[attr_name] == true %>checked="checked"<% end %>>
-          <%= attr_name %>
-        </label>
-      </div>
-    <% elsif attr_type == "int" %>
-      <label class="label"><%= attr_name %></label>
-      <div class="control">
-        <input class="input" placeholder="<%= attr_name %>" name="<%= attr_name %>" id="<%= attr_name %>" type="number" value="<%= query_hash[attr_name] %>">
-      </div>
-    <% elsif attr_type == "float" %>
-      <label class="label"><%= attr_name %></label>
-      <div class="control">
-        <input class="input" placeholder="<%= attr_name %>" name="<%= attr_name %>" id="<%= attr_name %>" type="number" step="any" value="<%= query_hash[attr_name] %>">
-      </div>
-    <% elsif attr_type == "string" %>
-      <label class="label"><%= attr_name %></label>
-      <div class="control">
-        <input class="input" placeholder="<%= attr_name %>" name="<%= attr_name %>" id="<%= attr_name %>" type="text" value="<%= query_hash[attr_name] %>">
-      </div>
-    <% elsif attr_type == "text" %>
-      <label class="label"><%= attr_name %></label>
-      <div class="control">
-        <textarea class="textarea" placeholder="<%= attr_name %>" id="<%= attr_name %>" name="<%= attr_name %>"><%= query_hash[attr_name] %></textarea>
-      </div>
-    <% elsif attr_type == "enum" %>
-      <label class="label"><%= attr_name %></label>
-      <div class="control">
-        <div class="select">
-          <select id="<%= attr_name %>" name="<%= attr_name %>">
-            <% if attr.size == 3 %>
-              <% options = attr.last.as(Array(String)) %>
-              <% attr_value = query_hash[attr_name].to_s %>
-              <% options = (options.includes?(attr_value) || attr_value.empty?) ? options : (options + [attr_value])   %>
-              <% options.each do |opt| %>
-                <% if opt == query_hash[attr_name] %>
-                  <option selected><%= opt %></option>
-                <% else %>
-                  <option><%= opt %></option>
-                <% end %>
-              <% end %>
-            <% end %>
-          </select>
-        </div>
-      </div>
-    <% elsif attr_type == "password" %>
-      <label class="label"><%= attr_name %></label>
-      <div class="control">
-        <input class="input" placeholder="<%= attr_name %>" name="<%= attr_name %>" id="<%= attr_name %>" type="password">
-      </div>
-      <p class="help is-info">Input raw password (NOT encrypted password) to set. Leave it empty if you do not want to change.</p>
-    <% elsif attr_type == "time" %>
-      <label class="label"><%= attr_name %></label>
-      <div class="control">
-        <input id="<%= attr_name %>" type="text" class="input datetime-picker" name="<%= attr_name %>" value="<%= query_hash[attr_name] %>">
-      </div>
-    <% else %>
+  <% if attr.is_a? Symbol %>
+    <% attr_name = attr.as(Symbol) %>
+    <% next if attr_name == item.class.primary_key_field_symbol %>
+    <% next if attr_name.to_s == item.class.updated_at_field %>
+    <% next if attr_name.to_s == item.class.created_at_field %>
+    <div class="field">
       <label class="label"><%= attr_name %></label>
       <div class="control">
         <textarea class="textarea" placeholder="<%= attr_name %>" rows="2" id="<%= attr_name %>" name="<%= attr_name %>"><%= query_hash[attr_name] %></textarea>
       </div>
-    <% end %>
-  </div>
+    </div>
+  <% else %>
+    <% attr = attr.as(Tuple(Symbol, String) | Tuple(Symbol, String, Array(String) | String)) %>
+    <% attr_name = attr[0] %>
+    <% attr_type = attr[1] %>
+    <% next if attr_name == item.class.primary_key_field_symbol %>
+    <% next if attr_name.to_s == item.class.updated_at_field %>
+    <% next if attr_name.to_s == item.class.created_at_field %>
+    <div class="field">
+      <% if attr.is_a?(Tuple(Symbol, String)) %>
+        <% if attr_type == "bool" %>
+          <div class="control">
+            <label class="checkbox">
+              <input placeholder="<%= attr_name %>" name="<%= attr_name %>" id="<%= attr_name %>" type="checkbox" <% if query_hash[attr_name] == true %>checked="checked"<% end %>>
+              <%= attr_name %>
+            </label>
+          </div>
+        <% elsif attr_type == "int" %>
+          <label class="label"><%= attr_name %></label>
+          <div class="control">
+            <input class="input" placeholder="<%= attr_name %>" name="<%= attr_name %>" id="<%= attr_name %>" type="number" value="<%= query_hash[attr_name] %>">
+          </div>
+        <% elsif attr_type == "float" %>
+          <label class="label"><%= attr_name %></label>
+          <div class="control">
+            <input class="input" placeholder="<%= attr_name %>" name="<%= attr_name %>" id="<%= attr_name %>" type="number" step="any" value="<%= query_hash[attr_name] %>">
+          </div>
+        <% elsif attr_type == "string" %>
+          <label class="label"><%= attr_name %></label>
+          <div class="control">
+            <input class="input" placeholder="<%= attr_name %>" name="<%= attr_name %>" id="<%= attr_name %>" type="text" value="<%= query_hash[attr_name] %>">
+          </div>
+        <% elsif attr_type == "text" %>
+          <label class="label"><%= attr_name %></label>
+          <div class="control">
+            <textarea class="textarea" placeholder="<%= attr_name %>" id="<%= attr_name %>" name="<%= attr_name %>"><%= query_hash[attr_name] %></textarea>
+          </div>
+        <% elsif attr_type == "password" %>
+          <label class="label"><%= attr_name %></label>
+          <div class="control">
+            <input class="input" placeholder="<%= attr_name %>" name="<%= attr_name %>" id="<%= attr_name %>" type="password">
+          </div>
+          <p class="help is-info">Input raw password (NOT encrypted password) to set. Leave it empty if you do not want to change.</p>
+        <% elsif attr_type == "time" %>
+          <label class="label"><%= attr_name %></label>
+          <div class="control">
+            <input id="<%= attr_name %>" type="text" class="input datetime-picker" name="<%= attr_name %>" value="<%= query_hash[attr_name] %>">
+          </div>
+        <% elsif attr_type == "fixed" %>
+          <label class="label"><%= attr_name %></label>
+          <div class="control">
+            <input class="input" readonly disabled name="<%= attr_name %>" id="<%= attr_name %>" type="text" value="<%= query_hash[attr_name] %>">
+          </div>
+        <% end %>
+      <% else %>
+        <% attr = attr.as(Tuple(Symbol, String, Array(String) | String)) %>
+        <% last = attr[2] %>
+        <% if attr_type == "enum" && last.is_a?(Array(String)) %>
+          <% last = last.as(Array(String)) %>
+          <label class="label"><%= attr_name %></label>
+          <div class="control">
+            <div class="select">
+              <select id="<%= attr_name %>" name="<%= attr_name %>">
+                <% options = last %>
+                <% attr_value = query_hash[attr_name].to_s %>
+                <% options = (options.includes?(attr_value) || attr_value.empty?) ? options : (options + [attr_value]) %>
+                <% options.each do |opt| %>
+                  <% if opt == query_hash[attr_name] %>
+                    <option selected><%= opt %></option>
+                  <% else %>
+                    <option><%= opt %></option>
+                  <% end %>
+                <% end %>
+              </select>
+            </div>
+          </div>
+        <% elsif attr_type == "fixed" && last.is_a?(String) %>
+          <% last = last.as(String) %>
+          <label class="label"><%= attr_name %></label>
+          <div class="control">
+            <input class="input" readonly disabled name="<%= attr_name %>" id="<%= attr_name %>" type="text" value="<%= query_hash[attr_name] ?  query_hash[attr_name] : attr.last%>">
+          </div>
+        <% end %>
+      <% end %>
+    </div>
+  <% end %>
 <% end %>

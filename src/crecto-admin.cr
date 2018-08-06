@@ -17,9 +17,9 @@ module CrectoAdmin
 
   @@resources = Array(NamedTuple(model: Crecto::Model.class,
     repo: Repo.class,
+    model_attributes: Array(Symbol),
     collection_attributes: Array(Symbol),
-    show_page_attributes: Array(Symbol),
-    form_attributes: Array(Tuple(Symbol, String) | Tuple(Symbol, String, Array(String))))).new
+    form_attributes: Array(Symbol | Tuple(Symbol, String) | Tuple(Symbol, String, Array(String) | String)))).new
 
   def self.add_resource(resource)
     @@resources.push(resource)
@@ -46,18 +46,28 @@ module CrectoAdmin
       ctx.params.query["search"]?
   end
 
-  def self.current_user(ctx) : String
-    return "" unless CrectoAdmin.config.auth_enabled
+  def self.current_user(ctx)
+    return nil unless CrectoAdmin.config.auth_enabled
+    return nil unless CrectoAdmin.admin_signed_in?(ctx)
     if CrectoAdmin.config.auth == CrectoAdmin::BasicAuth
-      username = ctx.kemal_authorized_username?
-      return "" if username.nil?
-      return username.to_s
+      return ctx.kemal_authorized_username?
     end
-    if CrectoAdmin.config.auth == CrectoAdmin::DatabaseAuth || CrectoAdmin.config.auth == CrectoAdmin::CustomAuth
-      return "" unless ctx.session.string?(SESSION_KEY) && !ctx.session.string(SESSION_KEY).empty?
-      return ctx.session.string(SESSION_KEY)
+    if CrectoAdmin.config.auth == CrectoAdmin::DatabaseAuth
+      user_id = ctx.session.string?(SESSION_KEY).to_s
+      return Repo.get!(CrectoAdmin.config.auth_model.not_nil!, user_id)
     end
-    return ""
+    if CrectoAdmin.config.auth == CrectoAdmin::CustomAuth
+      return ctx.session.string?(SESSION_KEY)
+    end
+    return nil
+  end
+
+  def self.current_user_label(ctx)
+    user = CrectoAdmin.current_user(ctx)
+    if user.is_a?(Crecto::Model)
+      return user.to_query_hash[CrectoAdmin.config.auth_model_identifier.not_nil!].to_s
+    end
+    return user.to_s
   end
 
   def self.current_table(ctx)
@@ -81,6 +91,36 @@ module CrectoAdmin
       end
     end
   end
+
+  def self.model_access(ctx, resource)
+    user = CrectoAdmin.current_user(ctx)
+    attributes = [] of Symbol
+    query = Crecto::Repo::Query.new
+    return {query, resource[:model_attributes]} unless CrectoAdmin.config.auth_enabled
+    if resource[:model].responds_to? :can_access
+      result = resource[:model].can_access(user)
+      if result.is_a?(Bool)
+        return {query, resource[:model_attributes]} if result.as(Bool)
+        return {nil, attributes}
+      elsif result.is_a?(Crecto::Repo::Query)
+        return {result.as(Crecto::Repo::Query), resource[:model_attributes]}
+      elsif result.is_a?(Array(Symbol))
+        return {query, result.as(Array(Symbol))}
+      elsif result.is_a?(Tuple(Crecto::Repo::Query, Array(Symbol)))
+        return result.as(Tuple(Crecto::Repo::Query, Array(Symbol)))
+      end
+    end
+    return {query, resource[:model_attributes]}
+  end
+
+  def self.accessible_resources(ctx)
+    @@resources.select do |resource|
+      access = CrectoAdmin.model_access(ctx, resource)
+      query = access[0]
+      attributes = access[1]
+      !query.nil? && !attributes.empty?
+    end
+  end
 end
 
 def self.init_admin
@@ -102,7 +142,11 @@ def self.init_admin
   get "/admin/dashboard" do |ctx|
     counts = [] of Int64
     CrectoAdmin.resources.each do |resource|
-      counts << resource[:repo].aggregate(resource[:model], :count, resource[:model].primary_key_field_symbol).as(Int64)
+      access = CrectoAdmin.model_access(ctx, resource)
+      next if access[0].nil?
+      next if access[1].empty?
+      query = access[0].as(Crecto::Repo::Query)
+      counts << resource[:repo].aggregate(resource[:model], :count, resource[:model].primary_key_field_symbol, query).as(Int64)
     end
     ecr "dashboard"
   end
@@ -136,7 +180,7 @@ def self.init_admin
         user = users.first
         encrypted_password = user.to_query_hash[CrectoAdmin.config.auth_model_password.not_nil!].to_s
         if Crypto::Bcrypt::Password.new(encrypted_password) == password
-          authorized = user_identifier
+          authorized = user.pkey_value.to_s
         end
       end
     end

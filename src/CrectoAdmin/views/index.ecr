@@ -34,7 +34,7 @@
       <thead>
         <tr>
           <th><%= resource[:model].primary_key_field_symbol %></th>
-          <% resource[:collection_attributes].each do |attr| %>
+          <% collection_attributes.each do |attr| %>
             <% next if attr == resource[:model].primary_key_field_symbol %>
             <th><%= attr %></th>
           <% end %>
@@ -46,7 +46,7 @@
           <% query_hash = item.to_query_hash %>
           <tr class="item-row" data-href="/admin/<%= item.class.table_name %>/<%= item.pkey_value %>">
             <td><div class="item-cell"><%= item.pkey_value %></div></td>
-            <% resource[:collection_attributes].each do |attr| %>
+            <% collection_attributes.each do |attr| %>
               <% next if attr == resource[:model].primary_key_field_symbol %>
               <td><div class="item-cell"><%= query_hash[attr] %></div></td>
             <% end %>
