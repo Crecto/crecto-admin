@@ -4,7 +4,7 @@ Admin dashboard for Crecto and your database.  Similar to [Rails Admin](https://
 
 Work in progress.
 
-![crecto admin](http://i.imgur.com/oEoF0ux.png)
+![crecto admin](screenshot.png)
 
 ## Installation
 
@@ -21,6 +21,11 @@ dependencies:
 ```crystal
 require "crecto-admin"
 
+# define Repo and models
+
+# Initialize admin server
+init_admin()
+
 # add your models
 admin_resource(User, Repo)
 admin_resource(Project, Repo)
@@ -29,38 +34,75 @@ admin_resource(Project, Repo)
 Kemal.run
 ```
 
-To modify the behaviour and display of index, show, form fields and search fields, the following methods can be added to Crecto model classes.  All return an array of string values for fields of the model.
+Take a look at the `exmaples` directory to find more infomation about usage.
 
-* The attributes shown on the index page:
+## Configuration
+To modify the behaviour and display of index, form fields and search fields, the following methods can be added to Crecto model classes.
 
-`def collection_attributes() : Array(String)`
+* The attributes shown on the index page:  
+  `def self.collection_attributes() : Array(Symbol)`  
+  The primary key field will always be shown on the index page.
 
-* The attributes show on the show page:
+* The attributes in the create and update forms:  
+  `def self.form_attributes() : Array(Symbol | Tuple(Symbol, String) | Tuple(Symbol, String, Array(String) | String))`  
+  Each form attribute could be:
+  * `Symbol`: field name
+  * `Tuple(Symbol, String)`: {field name, field type}
+  * `Tuple(Symbol, String, Array(String))`: {field name, field type, options}
+  * `Tuple(Symbol, String, String)`: {field name, field type, option}
+  
+  Field types:
+  * `bool`: checkbox
+  * `int`: number input, step 1
+  * `float`: number input, step: any
+  * `enum`: select from the options (the last item of the tuple)
+  * `string`: text input
+  * `text`: textarea
+  * `password`: password input, the backend will encrypt the raw password into enncrypted password
+  * `time`: date time picker
+  * `fixed`: readonly input, value as the model value or the option if provided ad the last item of the tuple
 
-`def show_page_attributes() : Array(String)`
 
-* The attributes in the create and update forms:
-
-`def form_attributes() : Array(String)`
-
-* The attributes used when searching:
-
-`def search_attributes() : Array(String)`
+* The attributes used when searching:  
+  `def self.search_attributes() : Array(Symbol)`  
+  The primary key field will always be searched.
 
 ## Authentication
 
 #### Database authentication
 
-Add a config block to define some information about your authentication.
+Add a config block to define some information about your database authentication.
 
 ```crystal
-CrectoAdmin.config do |c|
-  c.auth = CrectoAdmin::DatabaseAuth
-  c.auth_model = User
-  c.auth_model_identifier = :email
-  c.auth_method = ->(email : String, password : String) {
-    user = Repo.get_by!(User, email: email)
-    user.password_valid?(password)
+CrectoAdmin.config do |config|
+  config.auth_enabled = true
+  config.auth = CrectoAdmin::DatabaseAuth
+  config.auth_repo = Repo
+  config.auth_model = User
+  config.auth_model_identifier = :email
+  config.auth_model_password = :encrypted_password
+end
+```
+
+#### Basic authentication
+
+```crystal
+CrectoAdmin.config do |config|
+  config.auth_enabled = true
+  config.auth = CrectoAdmin::BasicAuth
+  config.basic_auth_credentials = {"user1" => "password1", "user2" => "password2"}
+end
+```
+
+#### Custom authentication
+Config the custom auth method. Return a `nil` or emtpy string for not autherized. Return a nonempty string for authorized.
+
+```crystal
+CrectoAdmin.config do |config|
+  config.auth_enabled = true
+  config.auth = CrectoAdmin::CustomAuth
+  c.custom_auth_method = ->(user_identifier : String, password : String) {
+    return "autherized user"
   }
 end
 ```
