@@ -61,7 +61,7 @@
         <% elsif attr_type == "fixed" %>
           <label class="label"><%= attr_name %></label>
           <div class="control">
-            <input class="input" readonly disabled name="<%= attr_name %>" id="<%= attr_name %>" type="text" value="<%= query_hash[attr_name] %>">
+            <input class="input is-static" readonly name="<%= attr_name %>" id="<%= attr_name %>" type="text" value="<%= query_hash[attr_name] %>">
           </div>
         <% end %>
       <% else %>
@@ -90,7 +90,7 @@
           <% last = last.as(String) %>
           <label class="label"><%= attr_name %></label>
           <div class="control">
-            <input class="input" readonly disabled name="<%= attr_name %>" id="<%= attr_name %>" type="text" value="<%= query_hash[attr_name] ?  query_hash[attr_name] : attr.last%>">
+            <input class="input is-static" readonly name="<%= attr_name %>" id="<%= attr_name %>" type="text" value="<%= query_hash[attr_name] ?  query_hash[attr_name] : attr.last%>">
           </div>
         <% end %>
       <% end %>
