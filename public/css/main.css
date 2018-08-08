@@ -42,12 +42,6 @@
   cursor: pointer;
 }
 
-.item-cell {
-  height: 24px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
 .sign-in-form {
   margin-top: 50px;
 }

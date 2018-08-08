@@ -32,9 +32,9 @@ class User < Crecto::Model
     field :last_posted, Time
   end
 
-  # do not show the encrypted_password in the collection (table) view
+  # do not show the encrypted_password and signature in the collection (table) view
   def self.collection_attributes
-    [:email, :role, :is_active, :name, :signature, :level, :balance, :last_posted, :updated_at, :created_at]
+    [:email, :role, :is_active, :name, :level, :balance, :last_posted, :updated_at, :created_at]
   end
 
   # specifiy fields and/or their types to be show in the create/update form
@@ -89,6 +89,10 @@ class Blog < Crecto::Model
     field :is_public, Bool
     field :title, String
     field :content, String
+  end
+
+  def self.collection_attributes
+    [:user_id, :is_public, :title, :updated_at, :created_at]
   end
 
   # only search in title and content
