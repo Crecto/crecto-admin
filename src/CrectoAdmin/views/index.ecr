@@ -20,7 +20,7 @@
     <form method="GET" action="/admin/<%= resource[:model].table_name %>/search">
       <div class="field">
         <p class="control has-icons-left">
-          <input class="input" type="text" name="search" value="<%= CrectoAdmin.search_param(ctx) %>">
+          <input class="input" type="text" name="search" value="<%= search_param %>">
           <span class="icon is-small is-left">
             <i class="fas fa-search"></i>
           </span>
@@ -35,10 +35,23 @@
     <table class="table is-fullwidth is-hoverable is-striped">
       <thead>
         <tr>
-          <th><%= resource[:model].primary_key_field_symbol %></th>
-          <% collection_attributes.each do |attr| %>
-            <% next if attr == resource[:model].primary_key_field_symbol %>
-            <th><%= attr %></th>
+          <% collection_attributes.each_with_index do |attr, i| %>
+            <th class="item-header">
+              <a class="has-text-black-ter" href="<%= CrectoAdmin.toggle_order(i, order_index, asc, offset, search_param, resource) %>">
+                <span><%= attr.to_s %></span>
+                <% if i == order_index %>
+                  <% if asc %>
+                    <span class="icon asc-icon">
+                      <i class="fas fa-sort-up"></i>
+                    </span>
+                  <% else %>
+                    <span class="icon desc-icon">
+                      <i class="fas fa-sort-down"></i>
+                    </span>
+                  <% end %>
+                <% end %>
+              </a>
+            </th>
           <% end %>
         </tr>
       </thead>

@@ -49,11 +49,6 @@ module CrectoAdmin
     end
   end
 
-  def self.search_param(ctx)
-    ctx.params.body["search"]? ||
-      ctx.params.query["search"]?
-  end
-
   def self.current_user(ctx)
     return nil unless CrectoAdmin.config.auth_enabled
     return nil unless CrectoAdmin.admin_signed_in?(ctx)
@@ -200,6 +195,32 @@ module CrectoAdmin
       end
     end
     !editable.empty?
+  end
+
+  def self.toggle_order(i, order_index, asc, offset, search_param, resource)
+    String.build do |str|
+      str << "/admin"
+      str << "/" << resource[:model].table_name
+      str << "/search" unless search_param.nil?
+      str << "?"
+      str << "offset=" << offset
+      str << "&order=" << i
+      str << "&asc=" << (i == order_index ? !asc : true)
+      str << ("&search=" + search_param.to_s) unless search_param.nil?
+    end
+  end
+
+  def self.change_page(page, order_index, asc, search_param, resource)
+    String.build do |str|
+      str << "/admin"
+      str << "/" << resource[:model].table_name
+      str << "/search" unless search_param.nil?
+      str << "?"
+      str << "offset=" << (page - 1) * CrectoAdmin.config.items_per_page
+      str << "&order=" << order_index
+      str << "&asc=" << asc
+      str << ("&search=" + search_param.to_s) unless search_param.nil?
+    end
   end
 end
 

@@ -38,6 +38,20 @@
   overflow-x: auto;
 }
 
+.item-header {
+  white-space: nowrap;
+}
+
+.asc-icon {
+  height: 0px;
+  position: relative;
+  top: 5px;
+}
+
+.desc-icon {
+  height: 0px;
+}
+
 .item-row {
   cursor: pointer;
 }
