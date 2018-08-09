@@ -10,7 +10,7 @@ def self.admin_resource(model : Crecto::Model.class, repo, **opts)
     form_attributes.concat(model.form_attributes)
   else
     model.fields.each do |f|
-      if CrectoAdmin.config.auth_repo == repo && CrectoAdmin.config.auth_model_password == f[:name]
+      if CrectoAdmin.config.auth_model_password == f[:name]
         form_attributes << {f[:name], "password"}
       else
         attr_type = f[:type].to_s
