@@ -157,12 +157,14 @@ def self.admin_resource(model : Crecto::Model.class, repo, **opts)
       end
     end
     item.update_from_hash(query_hash)
+    item.before_updated(user) if item.responds_to? :before_updated
     changeset = repo.update(item)
 
     if changeset.errors.any?
       ctx.flash["error"] = CrectoAdmin.changeset_errors(changeset)
       ecr("edit")
     else
+      item.after_updated(user) if item.responds_to? :after_updated
       ctx.flash["success"] = "Updated successfully"
       ctx.redirect "/admin/#{resource_index}/#{item.pkey_value}"
     end
@@ -187,6 +189,8 @@ def self.admin_resource(model : Crecto::Model.class, repo, **opts)
   post "/admin/#{resource_index}" do |ctx|
     user = CrectoAdmin.current_user(ctx)
     accesses = CrectoAdmin.check_resources(user)
+    access = accesses[resource_index]
+    next if access[0].nil? || access[1].empty?
     item = model.new
     query_hash = ctx.params.body.to_h
     resource[:form_attributes].each do |attr|
@@ -205,12 +209,14 @@ def self.admin_resource(model : Crecto::Model.class, repo, **opts)
       end
     end
     item.update_from_hash(query_hash)
+    item.before_created(user) if item.responds_to? :before_created
     changeset = repo.insert(item)
 
     if changeset.errors.any?
       ctx.flash["error"] = CrectoAdmin.changeset_errors(changeset)
       ecr("new")
     else
+      item.after_created(user) if item.responds_to? :after_created
       ctx.flash["success"] = "Created sucessfully"
       ctx.redirect "/admin/#{resource_index}/#{changeset.instance.pkey_value}"
     end
@@ -226,7 +232,9 @@ def self.admin_resource(model : Crecto::Model.class, repo, **opts)
     form_attributes = CrectoAdmin.check_edit(user, resource, item, access[1])
     can_delete = CrectoAdmin.check_delete(user, resource, item, form_attributes)
     next unless can_delete
+    item.before_deleted(user) if item.responds_to? :before_deleted
     changeset = repo.delete(item)
+    item.after_deleted(user) if item.responds_to? :after_deleted
 
     if changeset.errors.any?
       ctx.flash["error"] = CrectoAdmin.changeset_errors(changeset)
