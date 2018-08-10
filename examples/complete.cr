@@ -27,7 +27,7 @@ class User < Crecto::Model
     field :is_active, Bool
     field :name, String
     field :signature, String
-    field :level, Int32
+    field :level, Int32, default: 0
     field :balance, Float64
     field :last_posted, Time
   end
