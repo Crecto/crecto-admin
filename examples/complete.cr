@@ -46,7 +46,7 @@ class User < Crecto::Model
      {:role, "enum", ["admin", "user"]},
      {:is_active, "bool"},
      {:level, "int"},
-     {:balance, "float"},
+     {:balance, "float", "0.01"},
      {:last_posted, "time"}]
   end
 
