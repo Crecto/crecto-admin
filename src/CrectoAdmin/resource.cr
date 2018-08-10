@@ -31,7 +31,10 @@ def self.admin_resource(model : Crecto::Model.class, repo, **opts)
 
   search_attributes = model.responds_to?(:search_attributes) ? model.search_attributes : model_attributes
 
+  resource_index = CrectoAdmin.resources.size
+
   resource = {
+    index:                 resource_index,
     model:                 model,
     repo:                  repo,
     model_attributes:      model_attributes,
@@ -42,7 +45,7 @@ def self.admin_resource(model : Crecto::Model.class, repo, **opts)
   CrectoAdmin.add_resource(resource)
 
   # Index
-  get "/admin/#{model.table_name}" do |ctx|
+  get "/admin/#{resource_index}" do |ctx|
     user = CrectoAdmin.current_user(ctx)
     access = CrectoAdmin.check_access(user, resource)
     next if access[0].nil? || access[1].empty?
@@ -68,7 +71,7 @@ def self.admin_resource(model : Crecto::Model.class, repo, **opts)
   end
 
   # Search
-  get "/admin/#{model.table_name}/search" do |ctx|
+  get "/admin/#{resource_index}/search" do |ctx|
     user = CrectoAdmin.current_user(ctx)
     access = CrectoAdmin.check_access(user, resource)
     next if access[0].nil? || access[1].empty?
@@ -100,7 +103,7 @@ def self.admin_resource(model : Crecto::Model.class, repo, **opts)
   end
 
   # New form
-  get "/admin/#{model.table_name}/new" do |ctx|
+  get "/admin/#{resource_index}/new" do |ctx|
     user = CrectoAdmin.current_user(ctx)
     access = CrectoAdmin.check_access(user, resource)
     next if access[0].nil? || access[1].empty?
@@ -110,7 +113,7 @@ def self.admin_resource(model : Crecto::Model.class, repo, **opts)
   end
 
   # View
-  get "/admin/#{model.table_name}/:id" do |ctx|
+  get "/admin/#{resource_index}/:id" do |ctx|
     user = CrectoAdmin.current_user(ctx)
     access = CrectoAdmin.check_access(user, resource)
     next if access[0].nil? || access[1].empty?
@@ -126,7 +129,7 @@ def self.admin_resource(model : Crecto::Model.class, repo, **opts)
   end
 
   # Update
-  put "/admin/#{model.table_name}/:pid_id" do |ctx|
+  put "/admin/#{resource_index}/:pid_id" do |ctx|
     user = CrectoAdmin.current_user(ctx)
     access = CrectoAdmin.check_access(user, resource)
     next if access[0].nil? || access[1].empty?
@@ -156,12 +159,12 @@ def self.admin_resource(model : Crecto::Model.class, repo, **opts)
       ecr("edit")
     else
       ctx.flash["success"] = "Updated successfully"
-      ctx.redirect "/admin/#{model.table_name}/#{item.pkey_value}"
+      ctx.redirect "/admin/#{resource_index}/#{item.pkey_value}"
     end
   end
 
   # Edit form
-  get "/admin/#{model.table_name}/:id/edit" do |ctx|
+  get "/admin/#{resource_index}/:id/edit" do |ctx|
     user = CrectoAdmin.current_user(ctx)
     access = CrectoAdmin.check_access(user, resource)
     next if access[0].nil? || access[1].empty?
@@ -175,7 +178,7 @@ def self.admin_resource(model : Crecto::Model.class, repo, **opts)
   end
 
   # Create
-  post "/admin/#{model.table_name}" do |ctx|
+  post "/admin/#{resource_index}" do |ctx|
     item = model.new
     query_hash = ctx.params.body.to_h
     resource[:form_attributes].each do |attr|
@@ -201,12 +204,12 @@ def self.admin_resource(model : Crecto::Model.class, repo, **opts)
       ecr("new")
     else
       ctx.flash["success"] = "Created sucessfully"
-      ctx.redirect "/admin/#{model.table_name}/#{changeset.instance.pkey_value}"
+      ctx.redirect "/admin/#{resource_index}/#{changeset.instance.pkey_value}"
     end
   end
 
   # Delete
-  get "/admin/#{model.table_name}/:id/delete" do |ctx|
+  get "/admin/#{resource_index}/:id/delete" do |ctx|
     user = CrectoAdmin.current_user(ctx)
     access = CrectoAdmin.check_access(user, resource)
     next if access[0].nil? || access[1].empty?
@@ -221,7 +224,7 @@ def self.admin_resource(model : Crecto::Model.class, repo, **opts)
       ecr("show")
     else
       ctx.flash["success"] = "Deleted successfully"
-      ctx.redirect "/admin/#{model.table_name}"
+      ctx.redirect "/admin/#{resource_index}"
     end
   end
 end

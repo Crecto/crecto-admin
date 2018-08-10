@@ -23,7 +23,9 @@ module CrectoAdmin
   SESSION_KEY        = "8kezPq9GRAMm"
   AUTH_ALLOWED_PATHS = ["/admin", "/admin/sign_in"]
 
-  @@resources = Array(NamedTuple(model: Crecto::Model.class,
+  @@resources = Array(NamedTuple(
+    index: Int32,
+    model: Crecto::Model.class,
     repo: Repo.class,
     model_attributes: Array(Symbol),
     collection_attributes: Array(Symbol),
@@ -35,10 +37,6 @@ module CrectoAdmin
 
   def self.resources
     @@resources
-  end
-
-  def self.resource(model)
-    @@resources.select { |r| r[:model] == model }[0]
   end
 
   def self.field_cast(field, repo)
@@ -200,7 +198,7 @@ module CrectoAdmin
   def self.toggle_order(i, order_index, asc, offset, search_param, resource, per_page)
     String.build do |str|
       str << "/admin"
-      str << "/" << resource[:model].table_name
+      str << "/" << resource[:index]
       str << "/search" unless search_param.nil?
       str << "?"
       str << "offset=" << offset
@@ -214,7 +212,7 @@ module CrectoAdmin
   def self.change_page(page, order_index, asc, search_param, resource, per_page)
     String.build do |str|
       str << "/admin"
-      str << "/" << resource[:model].table_name
+      str << "/" << resource[:index]
       str << "/search" unless search_param.nil?
       str << "?"
       str << "offset=" << (page - 1) * per_page
@@ -228,7 +226,7 @@ module CrectoAdmin
   def self.per_page_url(order_index, asc, search_param, resource, per_page)
     String.build do |str|
       str << "/admin"
-      str << "/" << resource[:model].table_name
+      str << "/" << resource[:index]
       str << "/search" unless search_param.nil?
       str << "?"
       str << "offset=0"
