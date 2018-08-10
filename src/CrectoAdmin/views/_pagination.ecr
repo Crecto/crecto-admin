@@ -6,21 +6,21 @@
     <% if current_page == 1 %>
       <a class="pagination-previous" title="This is the first page" disabled>Previous</a>
     <% else %>
-      <a class="pagination-previous" href="<%= CrectoAdmin.change_page(current_page - 1, order_index, asc, search_param, resource) %>">Previous</a>
+      <a class="pagination-previous" href="<%= CrectoAdmin.change_page(current_page - 1, order_index, asc, search_param, resource, per_page) %>">Previous</a>
     <% end %>
 
     <% if current_page == pages %>
       <a class="pagination-next" disabled>Next page</a>
     <% else %>
-      <a class="pagination-next" href="<%= CrectoAdmin.change_page(current_page + 1, order_index, asc, search_param, resource) %>">Next page</a>
+      <a class="pagination-next" href="<%= CrectoAdmin.change_page(current_page + 1, order_index, asc, search_param, resource, per_page) %>">Next page</a>
     <% end %>
 
     <ul class="pagination-list">
       <% (1..pages).each do |page| %>
         <% if page == current_page %>
-          <a class="pagination-link is-current" aria-current="page" href="<%= CrectoAdmin.change_page(page, order_index, asc, search_param, resource) %>"><%= page %></a>
+          <a class="pagination-link is-current" aria-current="page" href="<%= CrectoAdmin.change_page(page, order_index, asc, search_param, resource, per_page) %>"><%= page %></a>
         <% else %>
-          <a class="pagination-link" href="<%= CrectoAdmin.change_page(page, order_index, asc, search_param, resource) %>"><%= page %></a>
+          <a class="pagination-link" href="<%= CrectoAdmin.change_page(page, order_index, asc, search_param, resource, per_page) %>"><%= page %></a>
         <% end %>
       <% end %>
     </ul>

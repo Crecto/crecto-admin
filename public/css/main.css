@@ -72,3 +72,15 @@
 .admin-logo {
   max-height: 40px!important;
 }
+
+.per-page-control {
+  margin-right: 0px;
+}
+
+.per-page-input {
+  width: 60px;
+}
+
+.total-rows-button {
+  padding-left: 5px;
+}

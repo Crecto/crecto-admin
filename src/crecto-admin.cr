@@ -197,7 +197,7 @@ module CrectoAdmin
     !editable.empty?
   end
 
-  def self.toggle_order(i, order_index, asc, offset, search_param, resource)
+  def self.toggle_order(i, order_index, asc, offset, search_param, resource, per_page)
     String.build do |str|
       str << "/admin"
       str << "/" << resource[:model].table_name
@@ -207,19 +207,35 @@ module CrectoAdmin
       str << "&order=" << i
       str << "&asc=" << (i == order_index ? !asc : true)
       str << ("&search=" + search_param.to_s) unless search_param.nil?
+      str << "&per_page=" << per_page
     end
   end
 
-  def self.change_page(page, order_index, asc, search_param, resource)
+  def self.change_page(page, order_index, asc, search_param, resource, per_page)
     String.build do |str|
       str << "/admin"
       str << "/" << resource[:model].table_name
       str << "/search" unless search_param.nil?
       str << "?"
-      str << "offset=" << (page - 1) * CrectoAdmin.config.items_per_page
+      str << "offset=" << (page - 1) * per_page
       str << "&order=" << order_index
       str << "&asc=" << asc
       str << ("&search=" + search_param.to_s) unless search_param.nil?
+      str << "&per_page=" << per_page
+    end
+  end
+
+  def self.per_page_url(order_index, asc, search_param, resource, per_page)
+    String.build do |str|
+      str << "/admin"
+      str << "/" << resource[:model].table_name
+      str << "/search" unless search_param.nil?
+      str << "?"
+      str << "offset=0"
+      str << "&order=" << order_index
+      str << "&asc=" << asc
+      str << ("&search=" + search_param.to_s) unless search_param.nil?
+      str << "&per_page=" + per_page.to_s unless per_page.nil?
     end
   end
 end

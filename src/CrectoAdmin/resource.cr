@@ -54,8 +54,12 @@ def self.admin_resource(model : Crecto::Model.class, repo, **opts)
     asc = ctx.params.query["asc"]? ? ctx.params.query["asc"].to_s == "true" : true
     order_by = asc ? collection_attributes[order_index].to_s : collection_attributes[order_index].to_s + " DESC"
     offset = ctx.params.query["offset"]? ? ctx.params.query["offset"].to_i : 0
-    per_page = CrectoAdmin.config.items_per_page
+    per_page = ctx.params.query["per_page"]? ? ctx.params.query["per_page"].to_i : CrectoAdmin.config.items_per_page
     count = repo.aggregate(model, :count, resource[:model].primary_key_field_symbol, query).as(Int64)
+    if per_page > count
+      offset = 0
+      per_page = count.to_s.to_i
+    end
     query = query.limit(per_page).offset(offset).order_by(order_by)
     data = repo.all(model, query)
     form_attributes = CrectoAdmin.check_create(user, resource, access[1])
@@ -82,9 +86,13 @@ def self.admin_resource(model : Crecto::Model.class, repo, **opts)
     search_string = "(" + search_attributes.map { |sa| "#{CrectoAdmin.field_cast(sa, repo)} LIKE ?" }.join(" OR ") + ")"
     search_param = ctx.params.query["search"]? ? ctx.params.query["search"].to_s : ""
     search_params = (1..search_attributes.size).map { |x| "%#{search_param}%" }
-    per_page = CrectoAdmin.config.items_per_page
+    per_page = ctx.params.query["per_page"]? ? ctx.params.query["per_page"].to_i : CrectoAdmin.config.items_per_page
     query = query.where(search_string, search_params)
     count = repo.aggregate(model, :count, resource[:model].primary_key_field_symbol, query).as(Int64)
+    if per_page > count
+      offset = 0
+      per_page = count.to_s.to_i
+    end
     query = query.limit(per_page).offset(offset).order_by(order_by)
     data = repo.all(model, query)
     form_attributes = CrectoAdmin.check_create(user, resource, access[1])

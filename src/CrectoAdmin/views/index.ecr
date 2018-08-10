@@ -4,17 +4,36 @@
 
 <div class="columns no-margin-bottom">
   <div class="column">
-    <span class="is-size-6 text-inline">
-      Total rows: <%= count %>
-    </span>&nbsp;&nbsp;
-    <% unless form_attributes.empty? %>
-      <a class="button" href="/admin/<%= resource[:model].table_name %>/new">
-        <span class="icon">
-          <i class="fas fa-plus"></i>
-        </span>
-        <span>New</span>
-      </a>
-    <% end %>
+    <div class="field is-grouped">
+      <p class="control per-page-control">
+        <form method="GET" action="<%= CrectoAdmin.per_page_url(order_index, asc, search_param, resource, nil) %>/search">
+          <input class="input per-page-input" type="text" placeholder="#rows" name="per_page" value="<%= per_page %>">
+        </form>
+      </p>
+      <p class="control">
+        <a class="button is-white" href="<%= CrectoAdmin.per_page_url(order_index, asc, search_param, resource, count) %>">
+          of total <%= count %> rows
+        </a>
+      </p>
+      <% unless form_attributes.empty? %>
+        <p class="control">
+          <a class="button" href="/admin/<%= resource[:model].table_name %>/new">
+            <span class="icon">
+              <i class="fas fa-plus"></i>
+            </span>
+            <span>New</span>
+          </a>
+        </p>
+      <% end %>
+      <p class="control">
+        <a id="exportButton" class="button" download="data.csv">
+          <span class="icon">
+            <i class="fas fa-file-export"></i>
+          </span>
+          <span id="exportLabel">Export</span>
+        </a>
+      </p>
+    </div>
   </div>
   <div class="column">
     <form method="GET" action="/admin/<%= resource[:model].table_name %>/search">
@@ -37,8 +56,8 @@
         <tr>
           <% collection_attributes.each_with_index do |attr, i| %>
             <th class="item-header">
-              <a class="has-text-black-ter" href="<%= CrectoAdmin.toggle_order(i, order_index, asc, offset, search_param, resource) %>">
-                <span><%= attr.to_s %></span>
+              <a class="has-text-black-ter" href="<%= CrectoAdmin.toggle_order(i, order_index, asc, offset, search_param, resource, per_page) %>">
+                <span class="header-name"><%= attr.to_s %></span>
                 <% if i == order_index %>
                   <% if asc %>
                     <span class="icon asc-icon">
@@ -60,10 +79,10 @@
         <% data.each do |item| %>
           <% query_hash = item.to_query_hash %>
           <tr class="item-row" data-href="/admin/<%= item.class.table_name %>/<%= item.pkey_value %>">
-            <td><div><%= item.pkey_value %></div></td>
+            <td><div class="item-value"><%= item.pkey_value %></div></td>
             <% collection_attributes.each do |attr| %>
               <% next if attr == resource[:model].primary_key_field_symbol %>
-              <td><div><%= query_hash[attr] %></div></td>
+              <td><div class="item-value"><%= query_hash[attr] %></div></td>
             <% end %>
           </tr>
         <% end %>
@@ -79,5 +98,27 @@ $(function(){
   $('.item-row').on('click', function() {
     window.location = $(this).data('href')
   })
+
+  var header = []
+  $('.header-name').each(function(i, v){
+    header.push(v.innerText)
+  })
+
+  var data = []
+  $('.item-row').each(function(i, r) {
+    var row = []
+    $(this).find('.item-value').each(function(j, v){
+      row.push(v.innerText)
+    })
+    data.push(row)
+  })
+
+  var csv = header.join(',')
+  data.forEach(function(row){
+    csv += '\n' + row.join(',')
+  })
+
+  var dataUri = "data:text/plain;base64," + btoa(csv)
+  $('#exportButton').attr('href',dataUri)
 })
 </script>
