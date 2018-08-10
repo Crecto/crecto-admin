@@ -157,7 +157,7 @@ def self.admin_resource(model : Crecto::Model.class, repo, **opts)
       end
     end
     item.update_from_hash(query_hash)
-    item.before_updated(user) if item.responds_to? :before_updated
+    item.before_update(user) if item.responds_to? :before_update
     changeset = repo.update(item)
 
     if changeset.errors.any?
@@ -209,7 +209,7 @@ def self.admin_resource(model : Crecto::Model.class, repo, **opts)
       end
     end
     item.update_from_hash(query_hash)
-    item.before_created(user) if item.responds_to? :before_created
+    item.before_create(user) if item.responds_to? :before_create
     changeset = repo.insert(item)
 
     if changeset.errors.any?
@@ -232,7 +232,7 @@ def self.admin_resource(model : Crecto::Model.class, repo, **opts)
     form_attributes = CrectoAdmin.check_edit(user, resource, item, access[1])
     can_delete = CrectoAdmin.check_delete(user, resource, item, form_attributes)
     next unless can_delete
-    item.before_deleted(user) if item.responds_to? :before_deleted
+    item.before_delete(user) if item.responds_to? :before_delete
     changeset = repo.delete(item)
     item.after_deleted(user) if item.responds_to? :after_deleted
 
