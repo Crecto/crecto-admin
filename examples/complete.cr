@@ -40,14 +40,14 @@ class User < Crecto::Model
   # specifiy fields and/or their types to be show in the create/update form
   def self.form_attributes
     [{:email, "string"},
-     {:encrypted_password, "password"},
+     :encrypted_password,
      {:name, "string"},
      {:signature, "text"},
      {:role, "enum", ["admin", "user"]},
-     {:is_active, "bool"},
-     {:level, "int"},
+     :is_active,
+     :level,
      {:balance, "float", "0.01"},
-     {:last_posted, "time"}]
+     :last_posted]
   end
 
   # only admin can create new user
@@ -101,10 +101,7 @@ class Blog < Crecto::Model
   end
 
   def self.form_attributes
-    [{:user_id, "int"},
-     {:is_public, "bool"},
-     {:title, "string"},
-     {:content, "text"}]
+    [:user_id, :is_public, {:title, "string"}, {:content, "text"}]
   end
 
   # admin can do anything
