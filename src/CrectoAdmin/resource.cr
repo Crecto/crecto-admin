@@ -67,6 +67,9 @@ def self.admin_resource(model : Crecto::Model.class, repo, **opts)
     data = repo.all(model, query)
     form_attributes = CrectoAdmin.check_create(user, resource, access[1])
     search_param = nil
+    search_attributes = search_attributes.select { |a| access[1].includes? a }
+    search_attributes.delete(model.primary_key_field_symbol)
+    search_attributes.unshift(model.primary_key_field_symbol)
     ecr("index")
   end
 
