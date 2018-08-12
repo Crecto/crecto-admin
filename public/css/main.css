@@ -84,3 +84,7 @@
 .total-rows-button {
   padding-left: 5px;
 }
+
+input[placeholder] {
+  text-overflow: ellipsis;
+}
