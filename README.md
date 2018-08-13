@@ -168,6 +168,18 @@ Permission check will only be enabled if the authentication enabled. By the defa
   * `false`: the user cannot delete this record
   Note that, be default if this method not defined, the user can delete the record as long as he has the edit permission
 
+## Event Hooks
+
+There are six events that users could hook their custom event callbacks. To hook up an event, simply define a instance method on the model. The input of each method is the `user : (String | Crecto::Model)?` returned from the authentication. If the authentication is not enabled, the input is `nil`. These hooks could be used to log actions or even make some version control functions.
+```crystal
+def before_create(user)
+def after_created(user)
+def before_update(user)
+def after_update(user)
+def before_delete(user)
+def after_deleted(user)
+```
+
 ## Development
 
 TODO: Write development instructions here

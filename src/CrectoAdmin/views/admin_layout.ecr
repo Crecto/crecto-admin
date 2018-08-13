@@ -64,14 +64,17 @@
                 <% else %>
                   <li><a href="/admin/dashboard">Dashboard</a></li>
                 <% end %>
-                <% CrectoAdmin.accessible_resources(ctx).each do |resource| %>
+                <% CrectoAdmin.resources.each do |resource| %>
+                  <% access = accesses[resource[:index]] %>
+                  <% next if access[0].nil? %>
+                  <% next if access[1].empty? %>
                   <li>
-                    <% if CrectoAdmin.current_table(ctx) == resource[:model].table_name %>
-                      <a class="is-active" href="/admin/<%= resource[:model].table_name %>">
+                    <% if CrectoAdmin.current_table(ctx) == resource[:index].to_s %>
+                      <a class="is-active" href="/admin/<%= resource[:index] %>">
                         <%= resource[:model].table_name.split('_').map(&.capitalize).join(' ') %>
                       </a>
                     <% else %>
-                      <a href="/admin/<%= resource[:model].table_name %>">
+                      <a href="/admin/<%= resource[:index] %>">
                         <%= resource[:model].table_name.split('_').map(&.capitalize).join(' ') %>
                       </a>
                     <% end %>

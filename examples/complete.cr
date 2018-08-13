@@ -141,6 +141,14 @@ class Blog < Crecto::Model
     return true if user.role.to_s == "admin"
     @user_id == user.id
   end
+
+  # hook up after created event
+  # when a user posts a blog, update the user's last posted time
+  def after_created(user)
+    return unless user.is_a? User
+    user.last_posted = Time.now
+    Repo.update(user)
+  end
 end
 
 # Configure global behaviors before initializing admin server
