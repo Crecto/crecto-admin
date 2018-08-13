@@ -53,8 +53,8 @@ To modify the behaviour and display of index, form fields and search fields, the
   
   Field types:
   * `bool`: checkbox
-  * `int`: number input, step 1
-  * `float`: number input, step: any
+  * `int`: number input, step: "1"
+  * `float`: number input, step: "any" or the third item of the tuple
   * `enum`: select from the options (the third item of the tuple)
   * `string`: text input
   * `text`: textarea
@@ -148,7 +148,7 @@ Permission check will only be enabled if the authentication enabled. By the defa
   It defines who can create a new record by what form attributes.
   * `true`: the user can create a new record
   * `false`: the user cannot create any record
-  * `Array(Symbol | Tuple(Symbol, String) | Tuple(Symbol, String, Array(String) | String))`: the user can create a new record by the specfic form attributes
+  * `Array(Symbol | Tuple(Symbol, String) | Tuple(Symbol, String, Array(String) | String))`: the user can create a new record by the specified form attributes
   Note that the attributes in the create form will be the intersection of the accessible attribute, the model form attribute and the specified attribute returned from this method
 * edit permission
   ```crystal

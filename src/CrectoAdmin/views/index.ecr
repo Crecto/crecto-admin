@@ -39,7 +39,7 @@
     <form method="GET" action="/admin/<%= resource[:index] %>/search">
       <div class="field">
         <p class="control has-icons-left">
-          <input class="input" type="text" name="search" value="<%= search_param %>">
+          <input class="input" type="text" name="search" value="<%= search_param %>" placeholder="<%= search_attributes.map(&.to_s).join(", ") %>">
           <span class="icon is-small is-left">
             <i class="fas fa-search"></i>
           </span>

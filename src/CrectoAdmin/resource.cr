@@ -6,27 +6,26 @@ def self.admin_resource(model : Crecto::Model.class, repo, **opts)
   collection_attributes = model.responds_to?(:collection_attributes) ? model.collection_attributes : model_attributes
 
   form_attributes = [] of Symbol | Tuple(Symbol, String) | Tuple(Symbol, String, Array(String) | String)
-  if model.responds_to?(:form_attributes)
-    form_attributes.concat(model.form_attributes)
-  else
-    model.fields.each do |f|
-      if CrectoAdmin.config.auth_model_password == f[:name]
-        form_attributes << {f[:name], "password"}
+  model.fields.each do |f|
+    if CrectoAdmin.config.auth_model_password == f[:name]
+      form_attributes << {f[:name], "password"}
+    else
+      attr_type = f[:type].to_s
+      if attr_type == "Bool"
+        form_attributes << {f[:name], "bool"}
+      elsif attr_type.starts_with?("Int")
+        form_attributes << {f[:name], "int"}
+      elsif attr_type.starts_with?("Float")
+        form_attributes << {f[:name], "float"}
+      elsif attr_type == "Time"
+        form_attributes << {f[:name], "time"}
       else
-        attr_type = f[:type].to_s
-        if attr_type == "Bool"
-          form_attributes << {f[:name], "bool"}
-        elsif attr_type.starts_with?("Int")
-          form_attributes << {f[:name], "int"}
-        elsif attr_type.starts_with?("Float")
-          form_attributes << {f[:name], "float"}
-        elsif attr_type == "Time"
-          form_attributes << {f[:name], "time"}
-        else
-          form_attributes << f[:name]
-        end
+        form_attributes << f[:name]
       end
     end
+  end
+  if model.responds_to?(:form_attributes)
+    form_attributes = CrectoAdmin.merge_form_attributes(model.form_attributes, form_attributes)
   end
 
   search_attributes = model.responds_to?(:search_attributes) ? model.search_attributes : model_attributes
@@ -68,6 +67,9 @@ def self.admin_resource(model : Crecto::Model.class, repo, **opts)
     data = repo.all(model, query)
     form_attributes = CrectoAdmin.check_create(user, resource, access[1])
     search_param = nil
+    search_attributes = search_attributes.select { |a| access[1].includes? a }
+    search_attributes.delete(model.primary_key_field_symbol)
+    search_attributes.unshift(model.primary_key_field_symbol)
     ecr("index")
   end
 
