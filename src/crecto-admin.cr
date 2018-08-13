@@ -23,7 +23,9 @@ module CrectoAdmin
   SESSION_KEY        = "8kezPq9GRAMm"
   AUTH_ALLOWED_PATHS = ["/admin", "/admin/sign_in"]
 
-  @@resources = Array(NamedTuple(model: Crecto::Model.class,
+  @@resources = Array(NamedTuple(
+    index: Int32,
+    model: Crecto::Model.class,
     repo: Repo.class,
     model_attributes: Array(Symbol),
     collection_attributes: Array(Symbol),
@@ -35,10 +37,6 @@ module CrectoAdmin
 
   def self.resources
     @@resources
-  end
-
-  def self.resource(model)
-    @@resources.select { |r| r[:model] == model }[0]
   end
 
   def self.field_cast(field, repo)
@@ -95,6 +93,14 @@ module CrectoAdmin
     end
   end
 
+  def self.check_resources(user)
+    accesses = [] of Tuple((Crecto::Repo::Query)?, Array(Symbol))
+    CrectoAdmin.resources.each do |resource|
+      accesses << CrectoAdmin.check_access(user, resource)
+    end
+    accesses
+  end
+
   def self.check_access(user, resource)
     attributes = [] of Symbol
     query = Crecto::Repo::Query.new
@@ -113,16 +119,6 @@ module CrectoAdmin
       end
     end
     return {query, resource[:model_attributes]}
-  end
-
-  def self.accessible_resources(ctx)
-    user = CrectoAdmin.current_user(ctx)
-    @@resources.select do |resource|
-      access = CrectoAdmin.check_access(user, resource)
-      query = access[0]
-      attributes = access[1]
-      !query.nil? && !attributes.empty?
-    end
   end
 
   def self.check_create(user, resource, accessible)
@@ -200,7 +196,7 @@ module CrectoAdmin
   def self.toggle_order(i, order_index, asc, offset, search_param, resource, per_page)
     String.build do |str|
       str << "/admin"
-      str << "/" << resource[:model].table_name
+      str << "/" << resource[:index]
       str << "/search" unless search_param.nil?
       str << "?"
       str << "offset=" << offset
@@ -214,7 +210,7 @@ module CrectoAdmin
   def self.change_page(page, order_index, asc, search_param, resource, per_page)
     String.build do |str|
       str << "/admin"
-      str << "/" << resource[:model].table_name
+      str << "/" << resource[:index]
       str << "/search" unless search_param.nil?
       str << "?"
       str << "offset=" << (page - 1) * per_page
@@ -228,7 +224,7 @@ module CrectoAdmin
   def self.per_page_url(order_index, asc, search_param, resource, per_page)
     String.build do |str|
       str << "/admin"
-      str << "/" << resource[:model].table_name
+      str << "/" << resource[:index]
       str << "/search" unless search_param.nil?
       str << "?"
       str << "offset=0"
@@ -259,12 +255,15 @@ def self.init_admin
   get "/admin/dashboard" do |ctx|
     counts = [] of Int64
     user = CrectoAdmin.current_user(ctx)
+    accesses = CrectoAdmin.check_resources(user)
     CrectoAdmin.resources.each do |resource|
-      access = CrectoAdmin.check_access(user, resource)
-      next if access[0].nil?
-      next if access[1].empty?
-      query = access[0].as(Crecto::Repo::Query)
-      counts << resource[:repo].aggregate(resource[:model], :count, resource[:model].primary_key_field_symbol, query).as(Int64)
+      access = accesses[resource[:index]]
+      if access[0].nil? || access[1].empty?
+        counts << 0
+      else
+        query = access[0].as(Crecto::Repo::Query)
+        counts << resource[:repo].aggregate(resource[:model], :count, resource[:model].primary_key_field_symbol, query).as(Int64)
+      end
     end
     ecr "dashboard"
   end
@@ -276,6 +275,7 @@ def self.init_admin
     if CrectoAdmin.config.auth == CrectoAdmin::BasicAuth
       next ctx.redirect "/admin/dashboard"
     end
+    accesses = [] of Tuple((Crecto::Repo::Query)?, Array(Symbol))
     ecr "sign_in"
   end
 

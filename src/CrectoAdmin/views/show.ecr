@@ -13,7 +13,7 @@
 <div class="field is-grouped">
   <% unless form_attributes.empty? %>
     <p class="control">
-      <a class="button is-info" href="/admin/<%= item.class.table_name %>/<%= item.pkey_value %>/edit">
+      <a class="button is-info" href="/admin/<%= resource[:index] %>/<%= item.pkey_value %>/edit">
         <span class="icon"><i class="fas fa-edit"></i></span>
         <span>Edit</span>
       </a>
@@ -21,7 +21,7 @@
   <% end %>
   <% if can_delete %>
     <p class="control">
-      <a class="button is-danger" href="/admin/<%= item.class.table_name %>/<%= item.pkey_value %>/delete"
+      <a class="button is-danger" href="/admin/<%= resource[:index] %>/<%= item.pkey_value %>/delete"
         onclick="return confirm('Are you sure to delete this record from the database?')">
         <span class="icon"><i class="fas fa-trash"></i></span>
         <span>Delete</span>

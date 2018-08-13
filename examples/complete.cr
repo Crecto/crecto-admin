@@ -27,7 +27,7 @@ class User < Crecto::Model
     field :is_active, Bool
     field :name, String
     field :signature, String
-    field :level, Int32
+    field :level, Int32, default: 0
     field :balance, Float64
     field :last_posted, Time
   end
@@ -40,14 +40,14 @@ class User < Crecto::Model
   # specifiy fields and/or their types to be show in the create/update form
   def self.form_attributes
     [{:email, "string"},
-     {:encrypted_password, "password"},
+     :encrypted_password,
      {:name, "string"},
      {:signature, "text"},
      {:role, "enum", ["admin", "user"]},
-     {:is_active, "bool"},
-     {:level, "int"},
-     {:balance, "float"},
-     {:last_posted, "time"}]
+     :is_active,
+     :level,
+     {:balance, "float", "0.01"},
+     :last_posted]
   end
 
   # only admin can create new user
@@ -101,10 +101,7 @@ class Blog < Crecto::Model
   end
 
   def self.form_attributes
-    [{:user_id, "int"},
-     {:is_public, "bool"},
-     {:title, "string"},
-     {:content, "text"}]
+    [:user_id, :is_public, {:title, "string"}, {:content, "text"}]
   end
 
   # admin can do anything
@@ -140,6 +137,14 @@ class Blog < Crecto::Model
     return false unless user.is_a? User
     return true if user.role.to_s == "admin"
     @user_id == user.id
+  end
+
+  # hook up after created event
+  # when a user posts a blog, update the user's last posted time
+  def after_created(user)
+    return unless user.is_a? User
+    user.last_posted = Time.now
+    Repo.update(user)
   end
 end
 

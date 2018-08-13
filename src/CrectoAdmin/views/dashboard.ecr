@@ -13,11 +13,14 @@
     </thead>
 
     <tbody>
-      <% CrectoAdmin.accessible_resources(ctx).each_with_index do |resource, i| %>
-        <tr class="item-row" data-href="/admin/<%= resource[:model].table_name %>">
+      <% CrectoAdmin.resources.each do |resource| %>
+        <% access = accesses[resource[:index]] %>
+        <% next if access[0].nil? %>
+        <% next if access[1].empty? %>
+        <tr class="item-row" data-href="/admin/<%= resource[:index] %>">
           <th><%= resource[:model].table_name.split('_').map(&.capitalize).join(' ') %></th>
           <td><%= resource[:model_attributes].map(&.to_s).join(", ") %></td>
-          <td><%= counts[i] %></td>
+          <td><%= counts[resource[:index]] %></td>
         </tr>
       <% end %>
     </tbody>

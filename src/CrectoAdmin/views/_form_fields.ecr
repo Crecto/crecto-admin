@@ -92,6 +92,12 @@
           <div class="control">
             <input class="input is-static" readonly name="<%= attr_name %>" id="<%= attr_name %>" type="text" value="<%= query_hash[attr_name] ?  query_hash[attr_name] : attr.last%>">
           </div>
+        <% elsif attr_type == "float" && last.is_a?(String) %>
+          <% last = last.as(String) %>
+          <label class="label"><%= attr_name %></label>
+          <div class="control">
+            <input class="input" placeholder="<%= attr_name %>" name="<%= attr_name %>" id="<%= attr_name %>" type="number" step="<%= last %>" value="<%= query_hash[attr_name] %>">
+          </div>
         <% end %>
       <% end %>
     </div>

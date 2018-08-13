@@ -6,32 +6,34 @@ def self.admin_resource(model : Crecto::Model.class, repo, **opts)
   collection_attributes = model.responds_to?(:collection_attributes) ? model.collection_attributes : model_attributes
 
   form_attributes = [] of Symbol | Tuple(Symbol, String) | Tuple(Symbol, String, Array(String) | String)
-  if model.responds_to?(:form_attributes)
-    form_attributes.concat(model.form_attributes)
-  else
-    model.fields.each do |f|
-      if CrectoAdmin.config.auth_model_password == f[:name]
-        form_attributes << {f[:name], "password"}
+  model.fields.each do |f|
+    if CrectoAdmin.config.auth_model_password == f[:name]
+      form_attributes << {f[:name], "password"}
+    else
+      attr_type = f[:type].to_s
+      if attr_type == "Bool"
+        form_attributes << {f[:name], "bool"}
+      elsif attr_type.starts_with?("Int")
+        form_attributes << {f[:name], "int"}
+      elsif attr_type.starts_with?("Float")
+        form_attributes << {f[:name], "float"}
+      elsif attr_type == "Time"
+        form_attributes << {f[:name], "time"}
       else
-        attr_type = f[:type].to_s
-        if attr_type == "Bool"
-          form_attributes << {f[:name], "bool"}
-        elsif attr_type.starts_with?("Int")
-          form_attributes << {f[:name], "int"}
-        elsif attr_type.starts_with?("Float")
-          form_attributes << {f[:name], "float"}
-        elsif attr_type == "Time"
-          form_attributes << {f[:name], "time"}
-        else
-          form_attributes << f[:name]
-        end
+        form_attributes << f[:name]
       end
     end
+  end
+  if model.responds_to?(:form_attributes)
+    form_attributes = CrectoAdmin.merge_form_attributes(model.form_attributes, form_attributes)
   end
 
   search_attributes = model.responds_to?(:search_attributes) ? model.search_attributes : model_attributes
 
+  resource_index = CrectoAdmin.resources.size
+
   resource = {
+    index:                 resource_index,
     model:                 model,
     repo:                  repo,
     model_attributes:      model_attributes,
@@ -42,9 +44,10 @@ def self.admin_resource(model : Crecto::Model.class, repo, **opts)
   CrectoAdmin.add_resource(resource)
 
   # Index
-  get "/admin/#{model.table_name}" do |ctx|
+  get "/admin/#{resource_index}" do |ctx|
     user = CrectoAdmin.current_user(ctx)
-    access = CrectoAdmin.check_access(user, resource)
+    accesses = CrectoAdmin.check_resources(user)
+    access = accesses[resource_index]
     next if access[0].nil? || access[1].empty?
     query = access[0].as(Crecto::Repo::Query)
     collection_attributes = resource[:collection_attributes].select { |a| access[1].includes? a }
@@ -64,13 +67,17 @@ def self.admin_resource(model : Crecto::Model.class, repo, **opts)
     data = repo.all(model, query)
     form_attributes = CrectoAdmin.check_create(user, resource, access[1])
     search_param = nil
+    search_attributes = search_attributes.select { |a| access[1].includes? a }
+    search_attributes.delete(model.primary_key_field_symbol)
+    search_attributes.unshift(model.primary_key_field_symbol)
     ecr("index")
   end
 
   # Search
-  get "/admin/#{model.table_name}/search" do |ctx|
+  get "/admin/#{resource_index}/search" do |ctx|
     user = CrectoAdmin.current_user(ctx)
-    access = CrectoAdmin.check_access(user, resource)
+    accesses = CrectoAdmin.check_resources(user)
+    access = accesses[resource_index]
     next if access[0].nil? || access[1].empty?
     query = access[0].as(Crecto::Repo::Query)
     collection_attributes = resource[:collection_attributes].select { |a| access[1].includes? a }
@@ -100,9 +107,10 @@ def self.admin_resource(model : Crecto::Model.class, repo, **opts)
   end
 
   # New form
-  get "/admin/#{model.table_name}/new" do |ctx|
+  get "/admin/#{resource_index}/new" do |ctx|
     user = CrectoAdmin.current_user(ctx)
-    access = CrectoAdmin.check_access(user, resource)
+    accesses = CrectoAdmin.check_resources(user)
+    access = accesses[resource_index]
     next if access[0].nil? || access[1].empty?
     item = model.new
     form_attributes = CrectoAdmin.check_create(user, resource, access[1])
@@ -110,9 +118,10 @@ def self.admin_resource(model : Crecto::Model.class, repo, **opts)
   end
 
   # View
-  get "/admin/#{model.table_name}/:id" do |ctx|
+  get "/admin/#{resource_index}/:id" do |ctx|
     user = CrectoAdmin.current_user(ctx)
-    access = CrectoAdmin.check_access(user, resource)
+    accesses = CrectoAdmin.check_resources(user)
+    access = accesses[resource_index]
     next if access[0].nil? || access[1].empty?
     query = access[0].as(Crecto::Repo::Query)
     query = query.where(resource[:model].primary_key_field_symbol, ctx.params.url["id"])
@@ -126,9 +135,10 @@ def self.admin_resource(model : Crecto::Model.class, repo, **opts)
   end
 
   # Update
-  put "/admin/#{model.table_name}/:pid_id" do |ctx|
+  put "/admin/#{resource_index}/:pid_id" do |ctx|
     user = CrectoAdmin.current_user(ctx)
-    access = CrectoAdmin.check_access(user, resource)
+    accesses = CrectoAdmin.check_resources(user)
+    access = accesses[resource_index]
     next if access[0].nil? || access[1].empty?
     item = repo.get!(model, ctx.params.url["pid_id"])
     form_attributes = CrectoAdmin.check_edit(user, resource, item, access[1])
@@ -149,21 +159,24 @@ def self.admin_resource(model : Crecto::Model.class, repo, **opts)
       end
     end
     item.update_from_hash(query_hash)
+    item.before_update(user) if item.responds_to? :before_update
     changeset = repo.update(item)
 
     if changeset.errors.any?
       ctx.flash["error"] = CrectoAdmin.changeset_errors(changeset)
       ecr("edit")
     else
+      item.after_updated(user) if item.responds_to? :after_updated
       ctx.flash["success"] = "Updated successfully"
-      ctx.redirect "/admin/#{model.table_name}/#{item.pkey_value}"
+      ctx.redirect "/admin/#{resource_index}/#{item.pkey_value}"
     end
   end
 
   # Edit form
-  get "/admin/#{model.table_name}/:id/edit" do |ctx|
+  get "/admin/#{resource_index}/:id/edit" do |ctx|
     user = CrectoAdmin.current_user(ctx)
-    access = CrectoAdmin.check_access(user, resource)
+    accesses = CrectoAdmin.check_resources(user)
+    access = accesses[resource_index]
     next if access[0].nil? || access[1].empty?
     query = access[0].as(Crecto::Repo::Query)
     query = query.where(resource[:model].primary_key_field_symbol, ctx.params.url["id"])
@@ -175,7 +188,11 @@ def self.admin_resource(model : Crecto::Model.class, repo, **opts)
   end
 
   # Create
-  post "/admin/#{model.table_name}" do |ctx|
+  post "/admin/#{resource_index}" do |ctx|
+    user = CrectoAdmin.current_user(ctx)
+    accesses = CrectoAdmin.check_resources(user)
+    access = accesses[resource_index]
+    next if access[0].nil? || access[1].empty?
     item = model.new
     query_hash = ctx.params.body.to_h
     resource[:form_attributes].each do |attr|
@@ -194,34 +211,39 @@ def self.admin_resource(model : Crecto::Model.class, repo, **opts)
       end
     end
     item.update_from_hash(query_hash)
+    item.before_create(user) if item.responds_to? :before_create
     changeset = repo.insert(item)
 
     if changeset.errors.any?
       ctx.flash["error"] = CrectoAdmin.changeset_errors(changeset)
       ecr("new")
     else
+      item.after_created(user) if item.responds_to? :after_created
       ctx.flash["success"] = "Created sucessfully"
-      ctx.redirect "/admin/#{model.table_name}/#{changeset.instance.pkey_value}"
+      ctx.redirect "/admin/#{resource_index}/#{changeset.instance.pkey_value}"
     end
   end
 
   # Delete
-  get "/admin/#{model.table_name}/:id/delete" do |ctx|
+  get "/admin/#{resource_index}/:id/delete" do |ctx|
     user = CrectoAdmin.current_user(ctx)
-    access = CrectoAdmin.check_access(user, resource)
+    accesses = CrectoAdmin.check_resources(user)
+    access = accesses[resource_index]
     next if access[0].nil? || access[1].empty?
     item = repo.get!(model, ctx.params.url["id"])
     form_attributes = CrectoAdmin.check_edit(user, resource, item, access[1])
     can_delete = CrectoAdmin.check_delete(user, resource, item, form_attributes)
     next unless can_delete
+    item.before_delete(user) if item.responds_to? :before_delete
     changeset = repo.delete(item)
+    item.after_deleted(user) if item.responds_to? :after_deleted
 
     if changeset.errors.any?
       ctx.flash["error"] = CrectoAdmin.changeset_errors(changeset)
       ecr("show")
     else
       ctx.flash["success"] = "Deleted successfully"
-      ctx.redirect "/admin/#{model.table_name}"
+      ctx.redirect "/admin/#{resource_index}"
     end
   end
 end
