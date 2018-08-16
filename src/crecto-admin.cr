@@ -40,7 +40,7 @@ module CrectoAdmin
   end
 
   def self.field_cast(field, repo)
-    if repo.config.adapter === Crecto::Adapters::Mysql
+    if repo.config.adapter == Crecto::Adapters::Mysql
       "CONCAT(#{field}, '')"
     else
       "CAST(#{field} as TEXT)"

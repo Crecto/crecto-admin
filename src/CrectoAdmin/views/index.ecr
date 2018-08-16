@@ -6,8 +6,11 @@
   <div class="column">
     <div class="field is-grouped">
       <p class="control per-page-control">
-        <form method="GET" action="<%= CrectoAdmin.per_page_url(order_index, asc, search_param, resource, nil) %>/search">
+        <form method="GET" action="<%= CrectoAdmin.per_page_url(order_index, asc, search_param, resource, nil) %>">
           <input class="input per-page-input" type="text" placeholder="#rows" name="per_page" value="<%= per_page %>">
+          <input type="hidden" name="order" value="<%= order_index %>">
+          <input type="hidden" name="asc" value="<%= asc %>">
+          <input type="hidden" name="search" value="<%= search_param %>">
         </form>
       </p>
       <p class="control">
@@ -45,6 +48,7 @@
           </span>
         </p>
       </div>
+      <input type="hidden" name="per_page" value="<%= per_page %>">
     </form>
   </div>
 </div>

@@ -16,12 +16,30 @@
     <% end %>
 
     <ul class="pagination-list">
-      <% (1..pages).each do |page| %>
-        <% if page == current_page %>
-          <a class="pagination-link is-current" aria-current="page" href="<%= CrectoAdmin.change_page(page, order_index, asc, search_param, resource, per_page) %>"><%= page %></a>
-        <% else %>
-          <a class="pagination-link" href="<%= CrectoAdmin.change_page(page, order_index, asc, search_param, resource, per_page) %>"><%= page %></a>
-        <% end %>
+      <% if current_page > 1 %>
+        <li><a class="pagination-link" href="<%= CrectoAdmin.change_page(1, order_index, asc, search_param, resource, per_page) %>">1</a></li>
+      <% end %>
+
+      <% if current_page > 3 %>
+        <li><span class="pagination-ellipsis">&hellip;</span></li>
+      <% end %>
+
+      <% if current_page > 2 %>
+        <li><a class="pagination-link" href="<%= CrectoAdmin.change_page(current_page - 1, order_index, asc, search_param, resource, per_page) %>"><%= current_page - 1 %></a></li>
+      <% end %>
+
+      <li><a class="pagination-link is-current"><%= current_page %></a></li>
+
+      <% if current_page + 1 < pages %>
+        <li><a class="pagination-link" href="<%= CrectoAdmin.change_page(current_page + 1, order_index, asc, search_param, resource, per_page) %>"><%= current_page + 1 %></a></li>
+      <% end %>
+
+      <% if current_page + 1 < pages - 1 %>
+        <li><span class="pagination-ellipsis">&hellip;</span></li>
+      <% end %>
+
+      <% if current_page < pages %>
+        <li><a class="pagination-link" href="<%= CrectoAdmin.change_page(pages, order_index, asc, search_param, resource, per_page) %>"><%= pages %></a></li>
       <% end %>
     </ul>
   </nav>
