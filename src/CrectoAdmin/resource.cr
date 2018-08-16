@@ -63,6 +63,7 @@ def self.admin_resource(model : Crecto::Model.class, repo, **opts)
       offset = 0
       per_page = count.to_s.to_i
     end
+    per_page = CrectoAdmin.config.items_per_page unless per_page > 0
     query = query.limit(per_page).offset(offset).order_by(order_by)
     data = repo.all(model, query)
     form_attributes = CrectoAdmin.check_create(user, resource, access[1])
@@ -100,6 +101,7 @@ def self.admin_resource(model : Crecto::Model.class, repo, **opts)
       offset = 0
       per_page = count.to_s.to_i
     end
+    per_page = CrectoAdmin.config.items_per_page unless per_page > 0
     query = query.limit(per_page).offset(offset).order_by(order_by)
     data = repo.all(model, query)
     form_attributes = CrectoAdmin.check_create(user, resource, access[1])
