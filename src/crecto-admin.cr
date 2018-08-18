@@ -144,11 +144,17 @@ module CrectoAdmin
       if result.is_a? Bool
         return empty unless result
       else
-        form_base = CrectoAdmin.filter_form_attributes(result, accessible)
+        form_base = CrectoAdmin.filter_form_attributes(result, accessible).select do |a|
+          next a != item.class.primary_key_field_symbol if a.is_a? Symbol
+          a[0] != item.class.primary_key_field_symbol
+        end
         return CrectoAdmin.merge_form_attributes(form_base, resource[:form_attributes])
       end
     end
-    CrectoAdmin.filter_form_attributes(resource[:form_attributes], accessible)
+    CrectoAdmin.filter_form_attributes(resource[:form_attributes], accessible).select do |a|
+      next a != item.class.primary_key_field_symbol if a.is_a? Symbol
+      a[0] != item.class.primary_key_field_symbol
+    end
   end
 
   def self.filter_form_attributes(form_attributes, attributes)

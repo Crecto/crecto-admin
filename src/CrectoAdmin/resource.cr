@@ -24,8 +24,14 @@ def self.admin_resource(model : Crecto::Model.class, repo, **opts)
       end
     end
   end
+
   if model.responds_to?(:form_attributes)
     form_attributes = CrectoAdmin.merge_form_attributes(model.form_attributes, form_attributes)
+  else
+    form_attributes = form_attributes.select do |a|
+      next a == model.primary_key_field_symbol if a.is_a? Symbol
+      a[0] == model.primary_key_field_symbol
+    end
   end
 
   search_attributes = model.responds_to?(:search_attributes) ? model.search_attributes : model_attributes
@@ -212,7 +218,12 @@ def self.admin_resource(model : Crecto::Model.class, repo, **opts)
         end
       end
     end
+
     item.update_from_hash(query_hash)
+    if query_hash.has_key? item.class.primary_key_field_symbol.to_s
+      item.update_primary_key(query_hash[item.class.primary_key_field_symbol.to_s])
+    end
+
     item.before_create(user) if item.responds_to? :before_create
     changeset = repo.insert(item)
 
