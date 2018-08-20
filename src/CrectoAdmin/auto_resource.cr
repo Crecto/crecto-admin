@@ -75,6 +75,16 @@ module CrectoAdmin
       pri_column = pri_column.as(CrectoAdmin::Column)
       pri_column.extra.includes?("auto_increment")
     end
+
+    def has_more_columns?
+      return false if primary_key_column.nil?
+      @columns.each do |column|
+        next if column == primary_key_column
+        next if column.column_type.nil?
+        return true
+      end
+      false
+    end
   end
 
   def self.build_header(uri)
@@ -94,7 +104,7 @@ module CrectoAdmin
 
   def self.build_class(table)
     return "# skip table: #{table.table_name}, no primary_key\n\n" if table.primary_key_column.nil?
-    return "# skip table: #{table.table_name}, only primary_key\n\n" if table.columns.size < 2
+    return "# skip table: #{table.table_name}, no adaptable columns\n\n" unless table.has_more_columns?
     String.build do |s|
       s << "class #{table.class_name} < Crecto::Model\n"
       s << "  set_created_at_field nil\n" unless table.has_created_at?
@@ -140,10 +150,12 @@ def self.auto_script(repo)
   index1 = db_uri.rindex('/')
   index1 = -1 if index1.nil?
   info_uri = db_uri[0..index1] + "information_schema"
+  db_name = db_uri[(index1 + 1)..-1]
   index2 = db_uri.index('?')
-  index2 = -1 if index2.nil?
-  db_name = db_uri[index1 + 1..index2]
-  db_uri = db_uri[0..(index2 - 1)] unless index2 == -1
+  unless index2.nil?
+    db_name = db_uri[(index1 + 1)...index2]
+    db_uri = db_uri[0..(index2 - 1)]
+  end
 
   tables = {} of String => CrectoAdmin::Table
   DB.open info_uri do |db|

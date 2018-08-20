@@ -70,7 +70,8 @@ def self.admin_resource(model : Crecto::Model.class, repo, **opts)
       per_page = count.to_s.to_i
     end
     per_page = CrectoAdmin.config.items_per_page unless per_page > 0
-    query = query.limit(per_page).offset(offset).order_by(order_by)
+    selection = collection_attributes.map(&.to_s)
+    query = query.select(selection).limit(per_page).offset(offset).order_by(order_by)
     data = repo.all(model, query)
     form_attributes = CrectoAdmin.check_create(user, resource, access[1])
     search_param = nil
@@ -108,7 +109,8 @@ def self.admin_resource(model : Crecto::Model.class, repo, **opts)
       per_page = count.to_s.to_i
     end
     per_page = CrectoAdmin.config.items_per_page unless per_page > 0
-    query = query.limit(per_page).offset(offset).order_by(order_by)
+    selection = collection_attributes.map(&.to_s)
+    query = query.select(selection).limit(per_page).offset(offset).order_by(order_by)
     data = repo.all(model, query)
     form_attributes = CrectoAdmin.check_create(user, resource, access[1])
     ecr("index")
@@ -131,12 +133,13 @@ def self.admin_resource(model : Crecto::Model.class, repo, **opts)
     accesses = CrectoAdmin.check_resources(user)
     access = accesses[resource_index]
     next if access[0].nil? || access[1].empty?
+    model_attributes = access[1]
     query = access[0].as(Crecto::Repo::Query)
-    query = query.where(resource[:model].primary_key_field_symbol, ctx.params.url["id"])
+    selection = model_attributes.map(&.to_s)
+    query = query.select(selection).where(resource[:model].primary_key_field_symbol, ctx.params.url["id"])
     data = repo.all(model, query).not_nil!
     next if data.empty?
     item = data.first
-    model_attributes = access[1]
     form_attributes = CrectoAdmin.check_edit(user, resource, item, access[1])
     can_delete = CrectoAdmin.check_delete(user, resource, item, form_attributes)
     ecr("show")
@@ -148,7 +151,13 @@ def self.admin_resource(model : Crecto::Model.class, repo, **opts)
     accesses = CrectoAdmin.check_resources(user)
     access = accesses[resource_index]
     next if access[0].nil? || access[1].empty?
-    item = repo.get!(model, ctx.params.url["pid_id"])
+    query = access[0].as(Crecto::Repo::Query)
+    model_attributes = access[1]
+    selection = model_attributes.map(&.to_s)
+    query = query.select(selection).where(resource[:model].primary_key_field_symbol, ctx.params.url["pid_id"])
+    data = repo.all(model, query).not_nil!
+    next if data.empty?
+    item = data.first
     form_attributes = CrectoAdmin.check_edit(user, resource, item, access[1])
     query_hash = ctx.params.body.to_h
     form_attributes.each do |attr|
@@ -187,7 +196,9 @@ def self.admin_resource(model : Crecto::Model.class, repo, **opts)
     access = accesses[resource_index]
     next if access[0].nil? || access[1].empty?
     query = access[0].as(Crecto::Repo::Query)
-    query = query.where(resource[:model].primary_key_field_symbol, ctx.params.url["id"])
+    model_attributes = access[1]
+    selection = model_attributes.map(&.to_s)
+    query = query.select(selection).where(resource[:model].primary_key_field_symbol, ctx.params.url["id"])
     data = repo.all(model, query).not_nil!
     next if data.empty?
     item = data.first
@@ -243,7 +254,13 @@ def self.admin_resource(model : Crecto::Model.class, repo, **opts)
     accesses = CrectoAdmin.check_resources(user)
     access = accesses[resource_index]
     next if access[0].nil? || access[1].empty?
-    item = repo.get!(model, ctx.params.url["id"])
+    query = access[0].as(Crecto::Repo::Query)
+    model_attributes = access[1]
+    selection = model_attributes.map(&.to_s)
+    query = query.select(selection).where(resource[:model].primary_key_field_symbol, ctx.params.url["id"])
+    data = repo.all(model, query).not_nil!
+    next if data.empty?
+    item = data.first
     form_attributes = CrectoAdmin.check_edit(user, resource, item, access[1])
     can_delete = CrectoAdmin.check_delete(user, resource, item, form_attributes)
     next unless can_delete
