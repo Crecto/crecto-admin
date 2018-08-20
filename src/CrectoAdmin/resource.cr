@@ -29,8 +29,8 @@ def self.admin_resource(model : Crecto::Model.class, repo, **opts)
     form_attributes = CrectoAdmin.merge_form_attributes(model.form_attributes, form_attributes)
   else
     form_attributes = form_attributes.select do |a|
-      next a == model.primary_key_field_symbol if a.is_a? Symbol
-      a[0] == model.primary_key_field_symbol
+      next a != model.primary_key_field_symbol if a.is_a? Symbol
+      a[0] != model.primary_key_field_symbol
     end
   end
 
