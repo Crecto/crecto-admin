@@ -6,6 +6,7 @@
   <table class="table is-fullwidth is-hoverable is-striped">
     <thead>
       <tr>
+        <th>Index</th>
         <th>Model</th>
         <th>Attributes</th>
         <th>Records</th>
@@ -18,6 +19,7 @@
         <% next if access[0].nil? %>
         <% next if access[1].empty? %>
         <tr class="item-row" data-href="/admin/<%= resource[:index] %>">
+          <th><%= resource[:index] %></th>
           <th><%= resource[:model].table_name.split('_').map(&.capitalize).join(' ') %></th>
           <td><%= resource[:model_attributes].map(&.to_s).join(", ") %></td>
           <td><%= counts[resource[:index]] %></td>
