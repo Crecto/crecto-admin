@@ -74,8 +74,8 @@ module CrectoAdmin
 
   def self.current_table(ctx)
     ss = ctx.request.path.split("/")
-    return "" if ss.size < 3
-    return ss[2]
+    return "resources" if ss.size < 4
+    return ss[3]
   end
 
   def self.admin_signed_in?(ctx)
