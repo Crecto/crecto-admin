@@ -59,10 +59,10 @@
           <div class="column is-narrow">
             <aside class="menu left-siebar-nav">
               <ul class="menu-list has-text-weight-bold">
-                <% if CrectoAdmin.current_table(ctx) == "dashboard" %>
-                  <li><a class="is-active" href="/admin/dashboard">Dashboard</a></li>
+                <% if CrectoAdmin.current_table(ctx) == "resources" %>
+                  <li><a class="is-active" href="/admin/resources">Dashboard</a></li>
                 <% else %>
-                  <li><a href="/admin/dashboard">Dashboard</a></li>
+                  <li><a href="/admin/resources">Dashboard</a></li>
                 <% end %>
                 <% CrectoAdmin.resources.each do |resource| %>
                   <% access = accesses[resource[:index]] %>
@@ -70,11 +70,11 @@
                   <% next if access[1].empty? %>
                   <li>
                     <% if CrectoAdmin.current_table(ctx) == resource[:index].to_s %>
-                      <a class="is-active" href="/admin/<%= resource[:index] %>">
+                      <a class="is-active" href="/admin/resources/<%= resource[:index] %>">
                         <%= resource[:model].table_name.split('_').map(&.capitalize).join(' ') %>
                       </a>
                     <% else %>
-                      <a href="/admin/<%= resource[:index] %>">
+                      <a href="/admin/resources/<%= resource[:index] %>">
                         <%= resource[:model].table_name.split('_').map(&.capitalize).join(' ') %>
                       </a>
                     <% end %>

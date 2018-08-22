@@ -1,10 +1,10 @@
 <% form_attributes.each do |attr| %>
   <% query_hash = item.to_query_hash %>
-  <% query_hash[item.class.primary_key_field_symbol] = item.pkey_value %>
+  <% query_hash[model.primary_key_field_symbol] = item.pkey_value %>
   <% if attr.is_a? Symbol %>
     <% attr_name = attr.as(Symbol) %>
-    <% next if attr_name.to_s == item.class.updated_at_field %>
-    <% next if attr_name.to_s == item.class.created_at_field %>
+    <% next if attr_name.to_s == model.updated_at_field %>
+    <% next if attr_name.to_s == model.created_at_field %>
     <div class="field">
       <label class="label"><%= attr_name %></label>
       <div class="control">
@@ -15,8 +15,8 @@
     <% attr = attr.as(Tuple(Symbol, String) | Tuple(Symbol, String, Array(String) | String)) %>
     <% attr_name = attr[0] %>
     <% attr_type = attr[1] %>
-    <% next if attr_name.to_s == item.class.updated_at_field %>
-    <% next if attr_name.to_s == item.class.created_at_field %>
+    <% next if attr_name.to_s == model.updated_at_field %>
+    <% next if attr_name.to_s == model.created_at_field %>
     <div class="field">
       <% if attr.is_a?(Tuple(Symbol, String)) %>
         <% if attr_type == "bool" %>

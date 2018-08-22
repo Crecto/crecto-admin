@@ -20,7 +20,7 @@
       </p>
       <% unless form_attributes.empty? %>
         <p class="control">
-          <a class="button" href="/admin/<%= resource[:index] %>/new">
+          <a class="button" href="/admin/resources/<%= resource[:index] %>/new">
             <span class="icon">
               <i class="fas fa-plus"></i>
             </span>
@@ -39,7 +39,7 @@
     </div>
   </div>
   <div class="column">
-    <form method="GET" action="/admin/<%= resource[:index] %>/search">
+    <form method="GET" action="/admin/resources/<%= resource[:index] %>/search">
       <div class="field">
         <p class="control has-icons-left">
           <input class="input" type="text" name="search" value="<%= search_param %>" placeholder="<%= search_attributes.map(&.to_s).join(", ") %>">
@@ -82,7 +82,7 @@
       <tbody>
         <% data.each do |item| %>
           <% query_hash = item.to_query_hash %>
-          <tr class="item-row" data-href="/admin/<%= resource[:index] %>/<%= item.pkey_value %>">
+          <tr class="item-row" data-href="/admin/resources/<%= resource[:index] %>/<%= item.pkey_value %>">
             <td><div class="item-value"><%= item.pkey_value %></div></td>
             <% collection_attributes.each do |attr| %>
               <% next if attr == resource[:model].primary_key_field_symbol %>
