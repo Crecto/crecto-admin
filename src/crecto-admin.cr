@@ -29,7 +29,8 @@ module CrectoAdmin
     repo: Repo.class,
     model_attributes: Array(Symbol),
     collection_attributes: Array(Symbol),
-    form_attributes: Array(Symbol | Tuple(Symbol, String) | Tuple(Symbol, String, Array(String) | String)))).new
+    form_attributes: Array(Symbol | Tuple(Symbol, String) | Tuple(Symbol, String, Array(String) | String)),
+    search_attributes: Array(Symbol))).new
 
   def self.add_resource(resource)
     @@resources.push(resource)
@@ -73,8 +74,8 @@ module CrectoAdmin
 
   def self.current_table(ctx)
     ss = ctx.request.path.split("/")
-    return "" if ss.size < 3
-    return ss[2]
+    return "resources" if ss.size < 4
+    return ss[3]
   end
 
   def self.admin_signed_in?(ctx)
@@ -138,6 +139,7 @@ module CrectoAdmin
   end
 
   def self.check_edit(user, resource, item, accessible)
+    model = resource[:model]
     empty = [] of Symbol | Tuple(Symbol, String) | Tuple(Symbol, String, Array(String) | String)
     if CrectoAdmin.config.auth_enabled && item.responds_to? :can_edit
       result = item.can_edit(user)
@@ -145,15 +147,15 @@ module CrectoAdmin
         return empty unless result
       else
         form_base = CrectoAdmin.filter_form_attributes(result, accessible).select do |a|
-          next a != item.class.primary_key_field_symbol if a.is_a? Symbol
-          a[0] != item.class.primary_key_field_symbol
+          next a != model.primary_key_field_symbol if a.is_a? Symbol
+          a[0] != model.primary_key_field_symbol
         end
         return CrectoAdmin.merge_form_attributes(form_base, resource[:form_attributes])
       end
     end
     CrectoAdmin.filter_form_attributes(resource[:form_attributes], accessible).select do |a|
-      next a != item.class.primary_key_field_symbol if a.is_a? Symbol
-      a[0] != item.class.primary_key_field_symbol
+      next a != model.primary_key_field_symbol if a.is_a? Symbol
+      a[0] != model.primary_key_field_symbol
     end
   end
 
@@ -201,7 +203,7 @@ module CrectoAdmin
 
   def self.toggle_order(i, order_index, asc, offset, search_param, resource, per_page)
     String.build do |str|
-      str << "/admin"
+      str << "/admin/resources"
       str << "/" << resource[:index]
       str << "/search" unless search_param.nil?
       str << "?"
@@ -215,7 +217,7 @@ module CrectoAdmin
 
   def self.change_page(page, order_index, asc, search_param, resource, per_page)
     String.build do |str|
-      str << "/admin"
+      str << "/admin/resources"
       str << "/" << resource[:index]
       str << "/search" unless search_param.nil?
       str << "?"
@@ -229,7 +231,7 @@ module CrectoAdmin
 
   def self.per_page_url(order_index, asc, search_param, resource, per_page)
     String.build do |str|
-      str << "/admin"
+      str << "/admin/resources"
       str << "/" << resource[:index]
       str << "/search" unless search_param.nil?
       str << "?"
@@ -239,85 +241,5 @@ module CrectoAdmin
       str << ("&search=" + search_param.to_s) unless search_param.nil?
       str << "&per_page=" + per_page.to_s unless per_page.nil?
     end
-  end
-end
-
-def self.init_admin
-  add_handler CSRF.new
-
-  if CrectoAdmin.config.auth_enabled && CrectoAdmin.config.auth == CrectoAdmin::BasicAuth
-    basic_auth CrectoAdmin.config.basic_auth_credentials.not_nil!
-  end
-
-  before_all "/admin/*" do |ctx|
-    next if CrectoAdmin::AUTH_ALLOWED_PATHS.includes?(ctx.request.path)
-    ctx.redirect "/admin/sign_in" unless CrectoAdmin.admin_signed_in?(ctx)
-  end
-
-  get "/admin" do |ctx|
-    ctx.redirect "/admin/dashboard"
-  end
-
-  get "/admin/dashboard" do |ctx|
-    counts = [] of Int64
-    user = CrectoAdmin.current_user(ctx)
-    accesses = CrectoAdmin.check_resources(user)
-    CrectoAdmin.resources.each do |resource|
-      access = accesses[resource[:index]]
-      if access[0].nil? || access[1].empty?
-        counts << 0
-      else
-        query = access[0].as(Crecto::Repo::Query)
-        counts << resource[:repo].aggregate(resource[:model], :count, resource[:model].primary_key_field_symbol, query).as(Int64)
-      end
-    end
-    ecr "dashboard"
-  end
-
-  get "/admin/sign_in" do |ctx|
-    unless CrectoAdmin.config.auth_enabled
-      next ctx.redirect "/admin/dashboard"
-    end
-    if CrectoAdmin.config.auth == CrectoAdmin::BasicAuth
-      next ctx.redirect "/admin/dashboard"
-    end
-    accesses = [] of Tuple((Crecto::Repo::Query)?, Array(Symbol))
-    ecr "sign_in"
-  end
-
-  post "/admin/sign_in" do |ctx|
-    unless CrectoAdmin.config.auth_enabled
-      next ctx.redirect "/admin/dashboard"
-    end
-    if CrectoAdmin.config.auth == CrectoAdmin::BasicAuth
-      next ctx.redirect "/admin/dashboard"
-    end
-    user_identifier = ctx.params.body["user"].to_s
-    password = ctx.params.body["password"].to_s
-    authorized = ""
-    if CrectoAdmin.config.auth == CrectoAdmin::CustomAuth
-      authorized = CrectoAdmin.config.custom_auth_method.not_nil!.call(user_identifier, password)
-    elsif CrectoAdmin.config.auth == CrectoAdmin::DatabaseAuth
-      query = Crecto::Repo::Query.where(CrectoAdmin.config.auth_model_identifier.not_nil!, user_identifier).limit(1)
-      users = CrectoAdmin.config.auth_repo.not_nil!.all(CrectoAdmin.config.auth_model.not_nil!, query)
-      if users.size == 1
-        user = users.first
-        encrypted_password = user.to_query_hash[CrectoAdmin.config.auth_model_password.not_nil!].to_s
-        if Crypto::Bcrypt::Password.new(encrypted_password) == password
-          authorized = user.pkey_value.to_s
-        end
-      end
-    end
-    if authorized.empty?
-      ctx.redirect "/admin/sign_in"
-    else
-      ctx.session.string(CrectoAdmin::SESSION_KEY, authorized)
-      ctx.redirect "/admin/dashboard"
-    end
-  end
-
-  get "/admin/sign_out" do |ctx|
-    ctx.session.string(CrectoAdmin::SESSION_KEY, "")
-    ctx.redirect "/admin/sign_in"
   end
 end

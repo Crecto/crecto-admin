@@ -11,7 +11,7 @@
 </div>
 
 <div>
-  <form method="post" action="/admin/<%= resource[:index] %>">
+  <form method="post" action="/admin/resources/<%= resource[:index] %>">
     <input type="hidden" name="authenticity_token" value="<%= ctx.session.string("csrf") %>" />
     <%= ecr "_form_fields" %>
     <div class="field is-grouped">

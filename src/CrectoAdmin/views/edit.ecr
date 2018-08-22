@@ -11,7 +11,7 @@
 </div>
 
 <div>
-  <form method="post" action="/admin/<%= resource[:index] %>/<%= item.pkey_value %>">
+  <form method="post" action="/admin/resources/<%= resource[:index] %>/<%= item.pkey_value %>">
     <input type="hidden" name="authenticity_token" value="<%= ctx.session.string("csrf") %>" />
     <input type="hidden" name="_method" value="put" />
     <%= ecr "_form_fields" %>
