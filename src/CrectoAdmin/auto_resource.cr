@@ -1,3 +1,5 @@
+require "ecr/macros"
+
 module CrectoAdmin
   class Column
     property column_name : String
@@ -172,17 +174,8 @@ def self.auto_script(repo)
     end
   end
 
-  header = CrectoAdmin.build_header(db_uri)
-  classes = tables.values.map do |table|
-    CrectoAdmin.build_class(table)
-  end
-  tail = CrectoAdmin.build_tail
-  all = String.build do |s|
-    s << header
-    classes.each do |c|
-      s << c
-    end
-    s << tail
-  end
-  puts all
+  io = IO::Memory.new
+  ECR.embed "#{__DIR__}/views/auto_resource.ecr", io
+
+  puts io.to_s
 end
