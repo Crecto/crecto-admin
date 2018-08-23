@@ -9,7 +9,7 @@ module Repo
   end
 end
 
-<% tables.values.each do |table| %>
+<%- tables.values.each do |table| -%>
   <%- if table.primary_key_column.nil? -%>
 # skip table: <%= table.table_name %>, no primary_key
   <%- elsif !(table.has_more_columns?) -%>
@@ -23,19 +23,19 @@ class <%= table.class_name %> < Crecto::Model
   set_updated_at_field nil
     <%- end -%>
   schema "<%= table.table_name %>" do
-  <%- columns_symbols = [] of String -%>
-  <%- table.columns.each do |column| -%>
-    <%- if column == table.primary_key_column -%>
+    <%- columns_symbols = [] of String -%>
+    <%- table.columns.each do |column| -%>
+      <%- if column == table.primary_key_column -%>
     field :<%= column.column_name %>, PkeyValue, primary_key: true
-      <%- columns_symbols << ":" + column.column_name -%>
-    <%- elsif column.is_created_at? || column.is_updated_at? -%>
-    <%- elsif column.column_type.nil? -%>
+        <%- columns_symbols << ":" + column.column_name -%>
+      <%- elsif column.is_created_at? || column.is_updated_at? -%>
+      <%- elsif column.column_type.nil? -%>
     # skip column: <%= column.column_name %> (<%=column.data_type %>)
-    <%- else -%>
+      <%- else -%>
     field :<%= column.column_name %>, <%= column.column_type %>
-      <%- columns_symbols << ":" + column.column_name -%>
+        <%- columns_symbols << ":" + column.column_name -%>
+      <%- end -%>
     <%- end -%>
-  <%- end -%>
   end
     <%- unless table.has_primary_key_auto? -%>
   def self.form_attributes
@@ -44,8 +44,8 @@ class <%= table.class_name %> < Crecto::Model
     <%- end -%>
 end
 admin_resource(<%= table.class_name %>, Repo)
-  <%- end -%>
-<% end %>
+  <%- end %>
+<%- end -%>
 
 init_admin()
 
