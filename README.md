@@ -34,7 +34,7 @@ admin_resource(Project, Repo)
 Kemal.run
 ```
 
-Take a look at the `exmaples` directory to find more infomation about the usage.
+Take a look at the `examples` directory to find more infomation about the usage.
 
 ## Configuration
 To modify the behaviour and display of index, form fields and search fields, the following methods can be added to Crecto model classes.
