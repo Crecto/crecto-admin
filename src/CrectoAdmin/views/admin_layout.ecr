@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html class="has-navbar-fixed-top">
   <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
@@ -19,7 +19,7 @@
     <script defer src="https://use.fontawesome.com/releases/v5.1.0/js/all.js"></script>
   </head>
   <body>
-    <nav class="navbar has-shadow">
+    <nav class="navbar has-shadow is-fixed-top">
       <div class="container">
         <div class="navbar-brand">
           <a class="navbar-item is-size-4 has-text-weight-bold has-text-black" href="/admin">
@@ -28,6 +28,13 @@
           </a>
         </div>
         <div class="navbar-menu is-active">
+          <div class="navbar-start">
+            <% if CrectoAdmin.admin_signed_in?(ctx) %>
+              <a class="navbar-item" href="/admin/resources">
+                Dashboard
+              </a>
+            <% end %>
+          </div>
           <div class="navbar-end">
             <% if CrectoAdmin.config.auth_enabled && CrectoAdmin.admin_signed_in?(ctx) %>
               <a class="navbar-item">
@@ -59,11 +66,6 @@
           <div class="column is-narrow">
             <aside class="menu left-siebar-nav">
               <ul class="menu-list has-text-weight-bold">
-                <% if CrectoAdmin.current_table(ctx) == "resources" %>
-                  <li><a class="is-active" href="/admin/resources">Dashboard</a></li>
-                <% else %>
-                  <li><a href="/admin/resources">Dashboard</a></li>
-                <% end %>
                 <% CrectoAdmin.resources.each do |resource| %>
                   <% access = accesses[resource[:index]] %>
                   <% next if access[0].nil? %>
@@ -71,11 +73,11 @@
                   <li>
                     <% if CrectoAdmin.current_table(ctx) == resource[:index].to_s %>
                       <a class="is-active" href="/admin/resources/<%= resource[:index] %>">
-                        <%= resource[:model].table_name.split('_').map(&.capitalize).join(' ') %>
+                        <%= resource[:model].table_name %>
                       </a>
                     <% else %>
                       <a href="/admin/resources/<%= resource[:index] %>">
-                        <%= resource[:model].table_name.split('_').map(&.capitalize).join(' ') %>
+                        <%= resource[:model].table_name %>
                       </a>
                     <% end %>
                   </li>
