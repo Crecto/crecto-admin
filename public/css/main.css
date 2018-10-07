@@ -88,3 +88,7 @@
 input[placeholder] {
   text-overflow: ellipsis;
 }
+
+.field-value {
+  white-space: pre-wrap;
+}

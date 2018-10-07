@@ -200,7 +200,7 @@ def self.init_admin
     next if access[0].nil? || access[1].empty?
     query = access[0].as(Crecto::Repo::Query)
     model_attributes = access[1]
-    selection = model_attributes.map(&.to_s)
+    selection = resource[:model_attributes].map(&.to_s)
     query = query.select(selection).where(model.primary_key_field_symbol, ctx.params.url["pid_id"])
     data = repo.all(model, query).not_nil!
     next if data.empty?

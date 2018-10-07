@@ -1,11 +1,11 @@
 <div class="is-size-4 has-text-weight-bold">
-  <%= resource[:model].table_name.split('_').map(&.capitalize).join(' ') %>
+  <%= resource[:model].table_name %>
 </div>
 
 <div class="columns no-margin-bottom">
   <div class="column">
     <span class="is-size-6 has-text-weight-bold text-inline">
-      <%= item.responds_to?(:name) ? item.name : item.pkey_value %>
+      <%= item.pkey_value %>
     </span>
   </div>
 </div>
@@ -35,7 +35,7 @@
   <div class="field">
     <label class="label"><%= resource[:model].primary_key_field_symbol %></label>
     <div class="control">
-      <pre><%= item.pkey_value %></pre>
+      <pre class="field-value"><%= item.pkey_value %></pre>
     </div>
   </div>
   <% model_attributes.each do |attr| %>
@@ -43,7 +43,7 @@
     <div class="field">
       <label class="label"><%= attr %></label>
       <div class="control">
-        <pre><%= query_hash[attr] %></pre>
+        <pre class="field-value"><%= query_hash[attr] %></pre>
       </div>
     </div>
   <% end %>

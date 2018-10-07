@@ -1,11 +1,11 @@
 <div class="is-size-4 has-text-weight-bold">
-  <%= resource[:model].table_name.split('_').map(&.capitalize).join(' ') %>
+  <%= resource[:model].table_name %>
 </div>
 
 <div class="columns no-margin-bottom">
   <div class="column">
     <span class="is-size-6 has-text-weight-bold text-inline">
-      <%= item.responds_to?(:name) ? item.name : item.pkey_value %>
+      <%= item.pkey_value %>
     </span>
   </div>
 </div>
