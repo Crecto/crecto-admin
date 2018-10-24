@@ -189,7 +189,7 @@ def self.init_admin
   end
 
   # Update
-  put "/admin/resources/:resource_index/:pid_id" do |ctx|
+  post "/admin/resources/:resource_index/:pid_id" do |ctx|
     resource_index = ctx.params.url["resource_index"].to_i
     resource = CrectoAdmin.resources[resource_index]
     model = resource[:model]
