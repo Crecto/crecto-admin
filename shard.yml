@@ -4,7 +4,7 @@ version: 0.2.0
 authors:
   - Nick Franken <shnick@gmail.com>
 
-crystal: 0.26.1
+crystal: 0.27.0
 
 license: MIT
 
@@ -14,16 +14,16 @@ dependencies:
 
   crecto:
     github: crecto/crecto
-    branch: master
 
   kemal:
     github: kemalcr/kemal
 
-  kemal-csrf:
-    github: kemalcr/kemal-csrf
-
   kemal-session:
     github: kemalcr/kemal-session
+
+  kemal-csrf:
+    github: exploitd/kemal-csrf
+    branch: master
 
   kemal-flash:
     github: neovintage/kemal-flash
