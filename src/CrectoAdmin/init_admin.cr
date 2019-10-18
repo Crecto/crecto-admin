@@ -59,7 +59,8 @@ def self.init_admin
       if users.size == 1
         user = users.first
         encrypted_password = user.to_query_hash[CrectoAdmin.config.auth_model_password.not_nil!].to_s
-        if Crypto::Bcrypt::Password.new(encrypted_password) == password
+        password_check = Crypto::Bcrypt::Password.new(encrypted_password)
+        if password_check.verify password
           authorized = user.pkey_value.to_s
         end
       end

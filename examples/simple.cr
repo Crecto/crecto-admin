@@ -13,7 +13,7 @@ module Repo
   extend Crecto::Repo
   config do |conf|
     conf.adapter = Crecto::Adapters::Postgres
-    conf.uri = "postgres://postgres:postgres@localhost:5432/crecto_admin_test" # use your database uri
+    conf.uri = ENV["DATABASE_URL"] # use your database uri
   end
 end
 
@@ -34,7 +34,7 @@ end
 
 class Blog < Crecto::Model
   schema "blogs" do
-    field :user_id, Int64
+    field :user_id, Int32
     field :is_public, Bool
     field :title, String
     field :content, String

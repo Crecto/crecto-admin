@@ -14,7 +14,7 @@ module Repo
   extend Crecto::Repo
   config do |conf|
     conf.adapter = Crecto::Adapters::Postgres
-    conf.uri = "postgres://postgres:postgres@localhost:5432/crecto_admin_test" # use your database uri
+    conf.uri = ENV["DATABASE_URL"] # use your database uri
   end
 end
 

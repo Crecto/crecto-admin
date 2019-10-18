@@ -9,7 +9,7 @@ module Repo
   extend Crecto::Repo
   config do |conf|
     conf.adapter = Crecto::Adapters::Mysql
-    conf.uri = "mysql://root:root@localhost:3306/crecto_test" # use your database uri
+    conf.uri = ENV["DATABASE_URL"] # use your database uri
   end
 end
 
